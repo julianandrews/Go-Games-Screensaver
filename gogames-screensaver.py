@@ -55,17 +55,17 @@ class GobanHBox(gtk.HBox):
     
     def __init__(self):
         gtk.HBox.__init__(self)
-        self.load_configuration()
-        self.goban_display = GobanDisplay(self.no_markup)
+        self.sgf_source = sgfsources.MultiSource(conf['sources'])
+        self.goban_display = GobanDisplay()
         self.pack_start(self.goban_display)
         self.abox = AnnotationDisplay()
-        if not self.no_annotations:
+        if conf['annotations']:
             self.pack_start(self.abox)
         self.new_game()
         
     def do_size_allocate(self, alloc):
         margin = alloc.height * self.margin_ratio
-        width_ratio = 1.0 + (self.abox_ratio if not self.no_annotations else 0)
+        width_ratio = 1.0 + (self.abox_ratio if conf['annotations'] else 0)
         if (alloc.width + 2 * margin)/ (alloc.height + 2 * margin) > width_ratio:
             height = int(alloc.height - 2 * margin)
         else:
@@ -78,24 +78,6 @@ class GobanHBox(gtk.HBox):
                                  int(y + height * self.abox_margin), 
                                  int(width - height * (1.0 - self.abox_margin)), 
                                  int(height * (1.0 - 2 * self.abox_margin))))
-                                 
-    def load_configuration(self):
-        source_str = conf['source']
-        if source_str == 'kgs':
-            self.sgf_source = sgfsources.KGSSource()
-        elif source_str == 'gokifu':
-            self.sgf_source = sgfsources.GoKifuSource()
-        elif source_str == 'eidogo':
-            self.sgf_source = sgfsources.EidoGoSource()
-        elif source_str == 'allweb':
-            self.sgf_source = sgfsources.AllWebSource()
-        else:
-            self.sgf_source = sgfsources.FileSource()
-        self.movedelay = conf['move_delay']
-        self.startdelay = conf['start_delay']
-        self.enddelay = conf['end_delay']
-        self.no_annotations = not conf['annotations']
-        self.no_markup = not conf['markup']
 
     def load_game_node(self):
         self.goban_display.game_node = self.sgf_source.get_random_game()
@@ -104,16 +86,16 @@ class GobanHBox(gtk.HBox):
         
     def new_game(self):
         self.load_game_node()
-        gobject.timeout_add(self.startdelay, self.run)
+        gobject.timeout_add(conf['start_delay'], self.run)
     
     def run(self):
         if not self.goban_display.game_node.child_nodes == []:
             self.goban_display.game_node = self.goban_display.game_node[0]
             self.goban_display.queue_draw()
             self.update_annotations()
-            gobject.timeout_add(self.movedelay, self.run)
+            gobject.timeout_add(conf['move_delay'], self.run)
         else:
-            gobject.timeout_add(self.enddelay, self.new_game)
+            gobject.timeout_add(conf['end_delay'], self.new_game)
             
     def update_annotations(self):
         self.abox.game_info = self.goban_display.game_node.game_info
@@ -262,10 +244,9 @@ class GobanDisplay(gtk.DrawingArea):
     markup_line_width = 1.5
     hoshi_radius = 2.0
     
-    def __init__(self, no_markup = False):
+    def __init__(self):
         super(GobanDisplay, self).__init__()
         self.board_size = 19
-        self.no_markup = no_markup
         self.size = None
         self.game_node = None
         self.current_stones = {}
@@ -370,7 +351,7 @@ class GobanDisplay(gtk.DrawingArea):
         self.draw_stones()
         cr.set_source(cairo.SurfacePattern(self.board_cr.get_target()))
         cr.paint()
-        if not self.no_markup:
+        if conf['markup']:
             self.draw_markup(cr)
         
     def gen_board(self):

@@ -19,6 +19,9 @@
 # I will probably release this with a more permissive license at some later
 # date, but for the moment want to keep my options open until I decide how
 # best to distribute it.
+#
+# Todo:
+#   Restructure config data so all meta-info is stored in one structure
 
 import gtk
 import optparse
@@ -30,49 +33,48 @@ from os_wrapper import data_folder, get_mode
 
 class Configuration(dict):
 
-    filename = os.path.join(data_folder, "config.xml")
+    filename = os.path.join(data_folder, 'config.xml')
+    xml_props = ('move_delay', 'start_delay', 'end_delay','markup', 
+                 'annotations', 'sgf_folder')
+    xml_prop_types = (int, int, int, int, int, str)
+    xml_prop_dict = {}
+    for p, t in zip(xml_props, xml_prop_types):
+        xml_prop_dict[p] = t
     
     def __init__(self):
         super(Configuration, self).__init__()
-        self.key_order = []
         self.load()
-        self["mode"], self["handle"] = get_mode()
+        self['mode'], self['handle'] = get_mode()
         self.parse_options()
             
     def save(self):
         impl = getDOMImplementation()
         xml_doc = impl.createDocument(None, 'config', None)
-        for prop in self.key_order + [x for x in self if not x in self.
-                                      key_order]:
-            if prop in ('mode', 'handle'):
-                continue
+        for prop in self.xml_props:
             value = self[prop]
             data_node = xml_doc.createElement(prop)
             data_node.appendChild(xml_doc.createTextNode(str(value)))
-            if type(value) == int:
-                data_node.setAttribute("type", "int")
-            elif type(value) == bool:
-                data_node.setAttribute("type", "bool")
+            xml_doc.documentElement.appendChild(data_node)
+        for source in self['sources']:
+            data_node = xml_doc.createElement('source')
+            data_node.appendChild(xml_doc.createTextNode(source))
             xml_doc.documentElement.appendChild(data_node)
         xml = xml_doc.toprettyxml()
         with open(self.filename, 'w') as f:
             f.write(xml)
         
     def load(self):
+        self["sources"] = []
         xml_doc = xml.dom.minidom.parse(self.filename)
         for node in xml_doc.firstChild.childNodes:
             if not node.nodeType == node.TEXT_NODE:
                 key = str(node.nodeName)
                 val = str(node.firstChild.data).strip()
-                if node.getAttribute("type") == "int":
-                    self[key] = int(val)
-                elif node.getAttribute("type") == "bool":
-                    self[key] = False if val == 'False' else True
+                if key == 'source':
+                    self['sources'].append(val)
                 else:
-                    self[key] = val
-                if not key in self.key_order:
-                    self.key_order.append(key)
-    
+                    self[key] = self.xml_prop_dict[key](val)
+            
     def parse_options(self):
         parser = optparse.OptionParser()
         parser.add_option("-d", dest="sgf_folder", 
@@ -85,8 +87,8 @@ class Configuration(dict):
                           help="delay at start of new game in ms", type="int", 
                           metavar="MS")
         parser.add_option("-e", "--enddelay", dest="enddelay",
-                          help="delay at end of a finished game in ms", type="int", 
-                          metavar="MS")
+                          help="delay at end of a finished game in ms", 
+                          type="int", metavar="MS")
         parser.add_option("-a", "--noannotations", action="store_true", 
                           help="disable annotations")
         parser.add_option("-k", "--nomarkup", action="store_true", 
@@ -99,18 +101,18 @@ class Configuration(dict):
                           help="Use games from eidogo.com")
         options, args = parser.parse_args()
         if options.kgs:
-            self['source'] = 'kgs'
+            self['sources'].append('kgs')
         elif options.gokifu:
-            self['source'] = 'gokifu'
+            self['sources'].append('gokifu')
         elif options.eidogo:
-            self['source'] = 'eidogo'
+            self['sources'].append('eidogo')
         self['move_delay'] = options.movedelay or self['move_delay']
         self['start_delay'] = options.startdelay or self['start_delay']
         self['end_delay'] = options.enddelay or self['end_delay']
         if options.noannotations:
-            self['annotations'] = False
+            self['annotations'] = 0
         if options.nomarkup:
-            self['markup'] = False
+            self['markup'] = 0
 
 
 class SSConfigWindow(gtk.Window):
@@ -120,11 +122,10 @@ class SSConfigWindow(gtk.Window):
         self.set_title("Go Games Screensaver Preferences")
         self.connect("destroy", gtk.main_quit)
         self.set_resizable(False)
-        #if not conf.get(handle) == None:
-        #    handle = conf[handle]
-        #    self.set_transient_for()
-        #    self.set_parent()
-        #    self.set_destroy_with_parent(True)
+        handle = conf.get('handle')
+        if not handle is None:
+            parent_window = gtk.gdk.window_foreign_new(handle)
+            # Do something smart here?
         vbox = gtk.VBox(spacing=6)
         align = gtk.Alignment()
         align.set_padding(12, 12, 12, 12)
@@ -223,34 +224,47 @@ class SSConfigWindow(gtk.Window):
         self.move_delay_spinner.set_value(self.conf["move_delay"]/1000.0)
         self.start_delay_spinner.set_value(self.conf["start_delay"]/1000.0)
         self.end_delay_spinner.set_value(self.conf["end_delay"]/1000.0)
-        if self.conf["source"] == "kgs":
+        if 'kgs' in self.conf["sources"]:
             self.kgs_check.set_active(True)
-        if self.conf["source"] == "eidogo":
+        if "eidogo" in self.conf["sources"]:
             self.eidogo_check.set_active(True)
-        if self.conf["source"] == "gokifu":
+        if "gokifu" in self.conf["sources"]:
             self.gokifu_check.set_active(True)
-        if self.conf["source"] == "file":
+        if "file" in self.conf["sources"]:
             self.file_check.set_active(True)
         self.markup_check.set_active(self.conf["markup"])
         self.annotations_check.set_active(self.conf["annotations"])
         self.file_chooser.set_filename(self.conf["sgf_folder"])
+
+    def update_conf(self):
+        self.conf['move_delay'] = int(round(self.move_delay_spinner.get_value() 
+                                            * 1000))
+        self.conf['start_delay'] = int(round(
+                                   self.start_delay_spinner.get_value() * 1000))
+        self.conf['end_delay'] = int(round(self.end_delay_spinner.get_value() 
+                                           * 1000))
+        self.conf['annotations'] = int(self.annotations_check.get_active())
+        self.conf['markup'] = int(self.markup_check.get_active())
+        self.conf['sgf_folder'] = self.file_chooser.get_filename()
+        self.conf['sources'] = []
+        if self.file_check.get_active():
+            self.conf['sources'].append('file') 
+        if self.kgs_check.get_active():
+            self.conf['sources'].append('kgs')
+        if self.gokifu_check.get_active():
+            self.conf['sources'].append('gokifu')
+        if self.eidogo_check.get_active():
+            self.conf['sources'].append('eidogo')
+        self.conf.save()
         
+    def on_apply(self, widget):
+        self.update_conf()
+
     def on_cancel(self, widget):
         self.destroy()
 
-    def on_apply(self, widget):
-        self.conf["move_delay"] = int(self.move_delay_spinner.get_value() *
-                                      1000)
-        self.conf["start_delay"] = int(self.start_delay_spinner.get_value() *
-                                       1000)
-        self.conf["end_delay"] = int(self.end_delay_spinner.get_value() * 1000)
-        self.conf["annotations"] = bool(self.annotations_check.get_active())
-        self.conf["markup"] = bool(self.markup_check.get_active())
-        self.conf["sgf_folder"] = self.file_chooser.get_filename()
-        self.conf.save()
-    
     def on_ok(self, widget):
-        self.on_apply(widget)
+        self.update_conf()
         self.destroy()
 
 class DelaySpinButton(gtk.SpinButton):

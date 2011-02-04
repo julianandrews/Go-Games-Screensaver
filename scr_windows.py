@@ -28,7 +28,7 @@ import win32con
 import win32gui
 
 def get_mode():
-    mode = 'c'
+    mode = 's'
     handle = None
     for i, (opt, next_opt) in enumerate(zip(sys.argv, sys.argv[1:] + [None])):
         if opt[0] in ('/', '-'):
@@ -40,7 +40,7 @@ def get_mode():
                     else:
                         try:
                             handle = int(next_opt)
-                        except TypeError:
+                        except (TypeError, ValueError):
                             handle = None
                 break
     return mode, handle
@@ -53,8 +53,6 @@ class WinSSWindow(gtk.Window):
         super(WinSSWindow, self).__init__(gtk.WINDOW_POPUP)
         self.connect("destroy", gtk.main_quit)
         self.mode, self.handle = get_mode()
-        if self.mode == 'c':
-            sys.exit()
 
     def do_realize(self):
         if self.mode == 's':
@@ -66,7 +64,7 @@ class WinSSWindow(gtk.Window):
                 window_type = gtk.gdk.WINDOW_TOPLEVEL,
                 wclass = gtk.gdk.INPUT_OUTPUT,
                 event_mask = gtk.gdk.ALL_EVENTS_MASK)
-            self.set_keep_above(True)
+            self.window.set_keep_above(True)
             pixmap = gtk.gdk.Pixmap(None, 1, 1, 1)
             color = gtk.gdk.Color()
             cursor = gtk.gdk.Cursor(pixmap, pixmap, color, color, 0, 0)
@@ -76,7 +74,6 @@ class WinSSWindow(gtk.Window):
             self.connect("key-press-event", gtk.main_quit)
         elif self.mode == 'p':
             parent_window = gtk.gdk.window_foreign_new(self.handle)
-            self.set_destroy_with_parent(True)
             x, y, w, h, depth = parent_window.get_geometry()
             self.window = gtk.gdk.Window(
                 parent_window,

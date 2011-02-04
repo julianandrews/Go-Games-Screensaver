@@ -94,6 +94,11 @@ class FileSource(SGFSource):
 class WebSGFSource(SGFSource):
     backup_source = FileSource()
     
+    def __init__(self):
+        self.source_id = [k for k, v in source_id_map.iteritems() if 
+                                                             v == type(self)][0]
+        super(WebSGFSource, self).__init__()
+    
     @staticmethod
     def uri_open(uri):
         return contextlib.closing(urllib2.urlopen(uri))
@@ -116,7 +121,6 @@ class WebSGFSource(SGFSource):
         
 class KGSSource(WebSGFSource):
 
-    source_id = 'kgs'
     game_list_url = "http://kgs.fuseki.info/games_list.php?sb=full&bs=wr"
     game_url_str = "http://kgs.fuseki.info/save_game.php?id=%s"
     game_count = 300
@@ -137,7 +141,6 @@ class KGSSource(WebSGFSource):
 
 class GoKifuSource(WebSGFSource):
 
-    source_id = 'gokifu'
     game_list_url = "http://gokifu.com/index.php"
     game_url_str = "http://gokifu.com/f/%s.sgf"
 
@@ -158,7 +161,6 @@ class GoKifuSource(WebSGFSource):
         
 class EidoGoSource(WebSGFSource):
 
-    source_id = 'eidogo'
     game_list_url = "http://eidogo.com/games?q=+"
     game_url_str = "http://eidogo.com/backend/download.php?id=%s"
     
@@ -167,4 +169,18 @@ class EidoGoSource(WebSGFSource):
         data = filehandle.read()
         filehandle.close()
         return re.findall("<td><a href=\"\\./#(.*?)\">", data)
+        
+class MultiSource(SGFSource):
+    
+    def __init__(self, source_ids):
+        self.sources = tuple(source_id_map[sid]() for sid in source_ids)
+        if self.sources == ():
+            self.sources = (FileSource(), )
+    
+    def get_random_game(self):
+        return random.choice(self.sources).get_random_game()
 
+source_id_map = {"file": FileSource,
+                 "kgs": KGSSource,
+                 "gokifu": GoKifuSource,
+                 "eidogo": EidoGoSource}

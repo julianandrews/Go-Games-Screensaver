@@ -1,24 +1,24 @@
 <?xml version="1.0" ?>
 <config>
-	<move_delay type="int">
+	<move_delay>
 		5000
 	</move_delay>
-	<start_delay type="int">
+	<start_delay>
 		2500
 	</start_delay>
-	<end_delay type="int">
+	<end_delay>
 		10000
 	</end_delay>
+	<markup>
+		True
+	</markup>
+	<annotations>
+		True
+	</annotations>
 	<sgf_folder>
 		E:\julian\coding\gogames-screensaver\data\sgf
 	</sgf_folder>
 	<source>
 		gokifu
 	</source>
-	<annotations type="bool">
-		False
-	</annotations>
-	<markup type="bool">
-		False
-	</markup>
 </config>

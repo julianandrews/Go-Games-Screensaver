@@ -37,9 +37,7 @@ class Configuration(dict):
     xml_props = ('move_delay', 'start_delay', 'end_delay','markup', 
                  'annotations', 'sgf_folder')
     xml_prop_types = (int, int, int, int, int, str)
-    xml_prop_dict = {}
-    for p, t in zip(xml_props, xml_prop_types):
-        xml_prop_dict[p] = t
+    xml_prop_dict = dict(zip(xml_props, xml_prop_types))
     
     def __init__(self):
         super(Configuration, self).__init__()
@@ -80,25 +78,25 @@ class Configuration(dict):
         parser.add_option("-d", dest="sgf_folder", 
                           help="directory containing sgf files to display", 
                           metavar="DIR")
-        parser.add_option("-m", "--movedelay", dest="movedelay",
+        parser.add_option("-m", dest="move_delay",
                           help="delay between move in ms", type="int", 
                           metavar="MS")
-        parser.add_option("-s", "--startdelay", dest="startdelay", 
+        parser.add_option("-s", dest="start_delay", 
                           help="delay at start of new game in ms", type="int", 
                           metavar="MS")
-        parser.add_option("-e", "--enddelay", dest="enddelay",
+        parser.add_option("-e", dest="end_delay",
                           help="delay at end of a finished game in ms", 
                           type="int", metavar="MS")
-        parser.add_option("-a", "--noannotations", action="store_true", 
+        parser.add_option("-a", dest="noannotations", action="store_true", 
                           help="disable annotations")
-        parser.add_option("-k", "--nomarkup", action="store_true", 
+        parser.add_option("-k", dest="nomarkup", action="store_true", 
                           help="disable markup")
         parser.add_option("--kgs", action="store_true", 
-                          help="Use games from kgs")
+                          help="use games from kgs.fuseki.info")
         parser.add_option("--gokifu", action="store_true", 
-                          help="Use games from gokifu.com")
+                          help="use games from gokifu.com")
         parser.add_option("--eidogo", action="store_true", 
-                          help="Use games from eidogo.com")
+                          help="use games from eidogo.com")
         options, args = parser.parse_args()
         if options.kgs:
             self['sources'].append('kgs')
@@ -106,9 +104,9 @@ class Configuration(dict):
             self['sources'].append('gokifu')
         elif options.eidogo:
             self['sources'].append('eidogo')
-        self['move_delay'] = options.movedelay or self['move_delay']
-        self['start_delay'] = options.startdelay or self['start_delay']
-        self['end_delay'] = options.enddelay or self['end_delay']
+        self['move_delay'] = options.move_delay or self['move_delay']
+        self['start_delay'] = options.start_delay or self['start_delay']
+        self['end_delay'] = options.end_delay or self['end_delay']
         if options.noannotations:
             self['annotations'] = 0
         if options.nomarkup:

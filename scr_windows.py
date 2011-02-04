@@ -28,22 +28,28 @@ import win32con
 import win32gui
 
 def get_mode():
-    mode = 's'
+    mode = None
     handle = None
+    del_list = []
     for i, (opt, next_opt) in enumerate(zip(sys.argv, sys.argv[1:] + [None])):
-        if opt[0] in ('/', '-'):
+        if opt[0] in ('/', '-') and len(opt) > 1:
             if opt[1] in ('s', 'c', 'p', 'S', 'C', 'P'):
-                mode = opt[1].lower()
-                if mode in ('p', 'c'):
+                mode = mode or opt[1].lower()
+                del_list.append(i)
+                try:
                     if len(opt) > 3 and opt[2] == ':':
-                        handle = int(opt[3:])
+                        new_handle = int(opt[3:])
+                    elif not next_opt is None:
+                        new_handle = int(next_opt)
+                        del_list.append(i+1)
                     else:
-                        try:
-                            handle = int(next_opt)
-                        except (TypeError, ValueError):
-                            handle = None
-                break
-    return mode, handle
+                        new_handle = None
+                    handle = handle or new_handle
+                except ValueError:
+                    handle = None
+    for i in reversed(del_list):
+        del sys.argv[i]
+    return mode or 's', handle
 
 class WinSSWindow(gtk.Window):
     __gtype_name__ = 'WinSSWindow'
@@ -53,6 +59,7 @@ class WinSSWindow(gtk.Window):
         super(WinSSWindow, self).__init__(gtk.WINDOW_POPUP)
         self.connect("destroy", gtk.main_quit)
         self.mode, self.handle = get_mode()
+        self.running = True
 
     def do_realize(self):
         if self.mode == 's':
@@ -70,8 +77,8 @@ class WinSSWindow(gtk.Window):
             cursor = gtk.gdk.Cursor(pixmap, pixmap, color, color, 0, 0)
             self.window.set_cursor(cursor)
             self.mne_id = self.connect("motion-notify-event", self.eat_event)
-            self.connect("button-press-event", gtk.main_quit)
             self.connect("key-press-event", gtk.main_quit)
+            self.connect("button-press-event", gtk.main_quit)
         elif self.mode == 'p':
             parent_window = gtk.gdk.window_foreign_new(self.handle)
             x, y, w, h, depth = parent_window.get_geometry()
@@ -96,15 +103,20 @@ class WinSSWindow(gtk.Window):
         pass
     
     def eat_event(self, *args):
+        """This is a hack to avoid shutting down right at program start every 
+        time.  A more elegant solution is called for."""
         self.disconnect(self.mne_id)
         self.connect("motion-notify-event", gtk.main_quit)
         
     def _wndproc(self, hwnd, msg, wparam, lparam):
-        if msg in (win32con.WM_CLOSE, win32con.WM_ACTIVATE, 
-                                                       win32con.WM_ACTIVATEAPP):
+        """We want to shutdown on certain windows messages.  There may be a 
+        better way to handle this via gtk, or alternatively, a way to avoid
+        having to catch the error."""
+        if msg in (win32con.WM_ACTIVATE, win32con.WM_ACTIVATEAPP, 
+                                                             win32con.WM_CLOSE):
             try:
                 gtk.main_quit()
-            except RuntimeError, e:
+            except RuntimeError, e: 
                 if not str(e) == "called outside of a mainloop":
                     raise
         else:

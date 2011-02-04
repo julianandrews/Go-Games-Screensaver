@@ -10,15 +10,21 @@
 		10000
 	</end_delay>
 	<markup>
-		True
+		1
 	</markup>
 	<annotations>
-		True
+		1
 	</annotations>
 	<sgf_folder>
 		E:\julian\coding\gogames-screensaver\data\sgf
 	</sgf_folder>
 	<source>
+		kgs
+	</source>
+	<source>
 		gokifu
+	</source>
+	<source>
+		eidogo
 	</source>
 </config>

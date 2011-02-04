@@ -19,6 +19,9 @@
 # I will probably release this with a more permissive license at some later
 # date, but for the moment want to keep my options open until I decide how
 # best to distribute it.
+#
+# Todo
+#   improve kgs and eidogo game_uri acquisition
 
 import contextlib
 import gobject

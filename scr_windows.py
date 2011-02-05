@@ -47,13 +47,12 @@ def get_mode():
                     handle = handle or new_handle
                 except ValueError:
                     handle = None
-    for i in reversed(del_list):
-        del sys.argv[i]
+    #for i in reversed(del_list):
+    #    del sys.argv[i]
     return mode or 's', handle
 
 class WinSSWindow(gtk.Window):
     __gtype_name__ = 'WinSSWindow'
-    __gsignals__ = {'size-request': 'override'}
     
     def __init__(self):
         super(WinSSWindow, self).__init__(gtk.WINDOW_POPUP)
@@ -79,6 +78,8 @@ class WinSSWindow(gtk.Window):
             self.mne_id = self.connect("motion-notify-event", self.eat_event)
             self.connect("key-press-event", gtk.main_quit)
             self.connect("button-press-event", gtk.main_quit)
+            self._oldwndproc = win32gui.SetWindowLong(self.window.handle,   
+                                            win32con.GWL_WNDPROC, self._wndproc)
         elif self.mode == 'p':
             parent_window = gtk.gdk.window_foreign_new(self.handle)
             x, y, w, h, depth = parent_window.get_geometry()
@@ -90,17 +91,11 @@ class WinSSWindow(gtk.Window):
                 wclass = gtk.gdk.INPUT_OUTPUT,
                 event_mask = gtk.gdk.EXPOSURE_MASK | gtk.gdk.STRUCTURE_MASK)
             self.size_allocate(gtk.gdk.Rectangle(x, y, w, h))
-            self.set_default_size(w, h)
-        self._oldwndproc = win32gui.SetWindowLong(self.window.handle,   
-                                            win32con.GWL_WNDPROC, self._wndproc)
+            self.set_size_request(w, h)
         self.set_decorated(False)
         self.window.set_user_data(self)
         self.set_flags(self.flags() | gtk.REALIZED)
         self.style.attach(self.window)
-
-    @staticmethod
-    def do_size_request(req):
-        pass
     
     def eat_event(self, *args):
         """This is a hack to avoid shutting down right at program start every 

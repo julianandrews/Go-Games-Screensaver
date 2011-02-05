@@ -47,7 +47,7 @@ property_info = {
     'PB': ('Player Black', 'game-info', 'simpletext', '', ''), 
     'PW': ('Player White', 'game-info', 'simpletext', '', ''), 
     'HA': ('Handicap', 'game-info', 'number', '', 'Go'),
-    'KM': ('Komi', ' game-info', 'real', '', 'Go'), 
+    'KM': ('Komi', 'game-info', 'real', '', 'Go'), 
     'TM': ('Timelimit', 'game-info', 'real', '', ''), 
     'BR': ('Black rank', 'game-info', 'simpletext', '', ''), 
     'WR': ('White rank', 'game-info', 'simpletext', '', ''),

@@ -43,14 +43,16 @@ class Goban(dict):
     _char_map = {None: ' ', 1: 'B', -1: 'W', 0: '.'}
 
     def __init__(self, goban = None, size = 19):
-        if not goban == None:
+        if not goban is None:
             self.size = goban.size
+            self.prisoners = dict(goban.prisoners)
+            self.move_number = goban.move_number
         else:
             self.size = size
+            self.move_number = 0
+            self.prisoners = {1:0, -1:0}
         dict.__init__(self, goban or self._default_goban(size))
-        self.move_number = goban.move_number if not goban == None else 0
         self.last_stone = None
-        self.prisoners = {1:0, -1:0}
                         
     def __str__(self):
         x_range = (min(x[0] for x in self.keys()), 

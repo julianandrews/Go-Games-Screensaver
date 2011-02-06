@@ -33,7 +33,7 @@ class GsThemeWindow(gtk.Window):
 
     def do_realize(self):
         ident = os.environ.get('XSCREENSAVER_WINDOW')
-        if ident:
+        if not ident is None:
             self.window = gtk.gdk.window_foreign_new(int(ident, 16))
             self.window.set_events(gtk.gdk.EXPOSURE_MASK |
                                    gtk.gdk.STRUCTURE_MASK)

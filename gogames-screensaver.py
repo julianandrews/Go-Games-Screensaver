@@ -76,8 +76,6 @@ class GobanHBox(gtk.HBox):
                                  int(y + height * self.abox_margin), 
                                  int(width - height * (1.0 - self.abox_margin)), 
                                  int(height * (1.0 - 2 * self.abox_margin))))
-        if self.flags() & gtk.REALIZED:
-            self.window.move_resize(*alloc)
 
     def load_game_node(self):
         self.goban_display.game_node = self.sgf_source.get_random_game()
@@ -116,7 +114,7 @@ class AnnotationDisplay(gtk.VBox):
                     'UC': "unclear position",
                     'HO': "hotspot"}
 
-    base_size = 11
+    base_size = 12
     game_info_spacing = 7
 
     def __init__(self):

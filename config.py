@@ -112,7 +112,6 @@ class Configuration(dict):
         if options.nomarkup:
             self['markup'] = 0
 
-
 class SSConfigWindow(gtk.Window):
     def __init__(self, conf):
         super(SSConfigWindow, self).__init__()
@@ -120,10 +119,7 @@ class SSConfigWindow(gtk.Window):
         self.set_title("Go Games Screensaver Preferences")
         self.connect("destroy", gtk.main_quit)
         self.set_resizable(False)
-        handle = conf.get('handle')
-        if not handle is None:
-            parent_window = gtk.gdk.window_foreign_new(handle)
-            # Do something smart here?
+        self.handle = conf.get('handle')
         vbox = gtk.VBox(spacing=6)
         align = gtk.Alignment()
         align.set_padding(12, 12, 12, 12)

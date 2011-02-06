@@ -1,6 +1,7 @@
 from distutils.core import setup
 import py2exe
 import glob
+import os
 
 opts = {
     'py2exe': {
@@ -18,11 +19,14 @@ opts = {
     }
 }
 
-setup(name = 'Go Games Screensaver',
-      version = '0.8',
+setup(name = 'Go Games',
+      version = '0.9',
       description = 'A scressnsaver which displays go games from sgf files.',
       author = 'Julian Andrews',
       windows = [{'script': 'gogames-screensaver.py',
                   'icon_resources': [(1,'data/images/icon.ico')]}],
       options = opts,
       zipfile = None)
+if os.access("dist/Go Games.scr", os.F_OK):
+    os.remove("dist/Go Games.scr")
+os.rename("dist/gogames-screensaver.exe", "dist/Go Games.scr")

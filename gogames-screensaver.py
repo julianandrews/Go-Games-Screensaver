@@ -24,9 +24,9 @@
 #
 # Todo
 #   Support LB markup property
-#   Display Pass moves, 'To Play'
+#   Display Pass moves
 #   Rework text formating
-#   Clean up VW property?
+#   Clean up VW property
 
 import cairo
 import gtk
@@ -326,7 +326,8 @@ class GobanDisplay(gtk.DrawingArea):
 
     def do_expose_event(self, event):
         new_size = self.window.get_size()
-        if not (new_size == self.size and self.game_node.goban.size == self.board_size):
+        if not (new_size == self.size and self.game_node.goban.size == 
+                                                               self.board_size):
             self.board_size = self.game_node.goban.size
             self.size = new_size
             self.gen_board()
@@ -587,5 +588,4 @@ if __name__ == "__main__":
         window.modify_bg(gtk.STATE_NORMAL, gtk.gdk.Color(0, 0, 0, 0))
         window.add(GobanHBox())
     window.show_all()
-    
     gtk.main()

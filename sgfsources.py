@@ -98,15 +98,16 @@ class SGFSource(object):
             if not e.data == "":
                 print "Error reading file, trying again"
                 if save_bad_sgf_data:
-                    with open(self._save_sgf_filename(), 'w') as f:
-                        f.write(e.data)
+                    self.save_sgf(e.data)
         return game_node
 
     @staticmethod
-    def _save_sgf_filename():
+    def save_sgf(self, data):
         num = ([0] + sorted(int(a) for a, b in map(os.path.splitext, 
                os.listdir('.')) if b == '.sgf'))[-1] + 1
-        return os.path.join(data_folder, "sgf_fail", "%s.sgf" % num)
+        filename = os.path.join(data_folder, "sgf_fail", "%s.sgf" % num)
+        with open(filename, 'w') as f:
+            f.write(data)
 
 class FileSource(SGFSource):
     default_sgf_folder = os.path.join(data_folder, "sgf")

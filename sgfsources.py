@@ -23,7 +23,7 @@
 # Todo
 #   improve kgs and eidogo game_uri acquisition
 #   timeout on failed reads
-#   acquire gameids asynchronously
+#   handle gameid acquisition failure
 
 import gio
 import gobject
@@ -34,7 +34,6 @@ import random
 import re
 import string
 import sys
-import time
 
 import gogame
 
@@ -132,7 +131,6 @@ FileSource.backup_source = FileSource()
 
 class WebSGFSource(SGFSource):
     backup_source = FileSource()
-    timeout = 3
     
     def __init__(self):
         self.source_id = [k for k, v in source_id_map.iteritems() if 

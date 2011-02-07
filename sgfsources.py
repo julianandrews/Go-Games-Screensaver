@@ -102,7 +102,7 @@ class SGFSource(object):
         return game_node
 
     @staticmethod
-    def save_sgf(self, data):
+    def save_sgf(data):
         num = ([0] + sorted(int(a) for a, b in map(os.path.splitext, 
                os.listdir('.')) if b == '.sgf'))[-1] + 1
         filename = os.path.join(data_folder, "sgf_fail", "%s.sgf" % num)

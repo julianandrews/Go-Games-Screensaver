@@ -22,7 +22,8 @@
 #
 # Todo
 #   improve kgs and eidogo game_uri acquisition
-#   timeout on game list acquisition failure
+#   timeout on failed reads
+#   acquire gameids asynchronously
 
 import gio
 import gobject
@@ -58,6 +59,8 @@ class SGFSource(object):
             data = self.load_random_game()
         else:
             data = self.preloaded_data.pop(0)
+        if data is None:
+            return self.backup_source.get_random_game()
         game_node = self.game_node_from_data(data)
         if game_node is None:
             return self.get_random_game()
@@ -69,7 +72,11 @@ class SGFSource(object):
     def load_random_game(self):
         uri = random.choice(self.game_uris)
         gfile = gio.File(uri)
-        return gfile.read().read()
+        try:
+            data = gfile.read().read()
+        except glib.GError:
+            data = None
+        return data
 
     def preload_random_game(self):
         uri = random.choice(self.game_uris)
@@ -77,8 +84,11 @@ class SGFSource(object):
         gfile.load_contents_async(self._file_load_cb)
 
     def _file_load_cb(self, gfile, result):
-        data = gfile.load_contents_finish(result)[0]
-        self.preloaded_data.append(data)
+        try:
+            data = gfile.load_contents_finish(result)[0]
+            self.preloaded_data.append(data)
+        except glib.GError:
+            pass
 
     def game_node_from_data(self, data):
         game_node = None
@@ -86,7 +96,6 @@ class SGFSource(object):
             collection = gogame.game_nodes_from_data(data)
             game_node = collection[0]
         except gogame.GogameError, e:
-            self.game_uris.remove(uri)
             if not e.data == "":
                 print "Error reading file, trying again"
                 if save_bad_sgf_data:
@@ -119,51 +128,60 @@ class FileSource(SGFSource):
                                os.listdir(self.sgf_folder))
             self.game_uris = [os.path.join(self.sgf_folder, x) for x in filenames]
 
+FileSource.backup_source = FileSource()
+
 class WebSGFSource(SGFSource):
     backup_source = FileSource()
     timeout = 3
     
     def __init__(self):
         self.source_id = [k for k, v in source_id_map.iteritems() if 
-                                                             v == type(self)][0]
+                                                            v == type(self)][0]
         super(WebSGFSource, self).__init__()
 
     def get_game_uris(self):
-        gameids = gameid_cache.get(self.source_id, [])
-        if len(gameids) == 0:
-            self.refresh_game_uris()
-        else:
-            self.game_uris = [self.game_url_str % x for x in gameids]
-            gobject.idle_add(self.refresh_game_uris)
-            
-    def refresh_game_uris(self):
-        print "refreshing uris"
-        global gameid_cache
-        gameids = self.get_gameids()
+        if gameid_cache.get(self.source_id) in ([], None):
+            self.get_gameids()
+        gameids = gameid_cache[self.source_id]
         self.game_uris = [self.game_url_str % x for x in gameids]
-        gameid_cache[self.source_id] = gameids
-        with open(gameid_cache_file, 'w') as f:
+        self.load_gameids()
+        
+    def save_gameid_cache(self):
+        with open(os.path.join(data_folder, gameid_cache_file), 'w') as f:
             pickle.dump(gameid_cache, f)
         
 class KGSSource(WebSGFSource):
 
     game_list_url = "http://kgs.fuseki.info/games_list.php?sb=full&bs=wr"
     game_url_str = "http://kgs.fuseki.info/save_game.php?id=%s"
-    game_count = 300
-    
+    min_gameid_count = 1000
+        
     def get_gameids(self):
-        gameids = []
-        start_str = ""
-        while len(gameids) < self.game_count:
-            data = ""
-            filehandle = urllib2.urlopen(self.game_list_url + start_str)
-            data = filehandle.read()
-            filehandle.close()
-            gameids += re.findall("OpenGame\\(\\'(\\w*?)\\'\\)", data)
-            if len(gameids) == 0:
-                break
-            start_str = "&id=%s" % gameids[-1]
-        return gameids
+        gfile = gio.File(self.game_list_url)
+        data = gfile.read().read()
+        gameid_cache[self.source_id] = re.findall(
+                                           "OpenGame\\(\\'(\\w*?)\\'\\)", data)
+
+    def load_gameids(self):
+        gameid_cache[self.source_id] = []
+        gfile = gio.File(self.game_list_url)
+        gfile.load_contents_async(self._load_gameid_cb)
+
+    def _load_gameid_cb(self, gfile, result):
+        try:
+            data = gfile.load_contents_finish(result)[0]
+            gameid_cache[self.source_id] += \
+                                re.findall("OpenGame\\(\\'(\\w*?)\\'\\)", data)
+            self.game_uris = [self.game_url_str % x for x in 
+                                                 gameid_cache[self.source_id]]
+            if len(gameid_cache[self.source_id]) < self.min_gameid_count:
+                start_str = "&id=%s" % gameid_cache[self.source_id][-1]
+                new_gfile =gio.File(self.game_list_url + start_str)
+                new_gfile.load_contents_async(self._load_gameid_cb)
+            else:
+                self.save_gameid_cache()
+        except glib.GError:
+            print 'error'
 
 class GoKifuSource(WebSGFSource):
 
@@ -171,19 +189,26 @@ class GoKifuSource(WebSGFSource):
     game_url_str = "http://gokifu.com/f/%s.sgf"
 
     def get_gameids(self):
-        filehandle = urllib2.urlopen(self.game_list_url)
-        data = filehandle.read()
-        filehandle.close()
-        try:
-            last_game_id = re.findall("/f/(\\w*?)\\.sgf", data)[0]
-        except IndexError:
-            self.game_uris = []
-            return
-        return list(itertools.imap(lambda x: x.lstrip('0'), 
-                    itertools.takewhile(lambda x: not x == last_game_id, 
-                    ("%s%s%s" % (a, b, c) for a in string.digits for b in 
-                    string.ascii_lowercase for c in string.ascii_lowercase
-                    )))) + [last_game_id]
+        gfile = gio.File(self.game_list_url)
+        data = gfile.read().read()
+        self.gameds_from_data(data)
+        
+    def gameids_from_data(self, data):
+        last_game_id = re.findall("/f/(\\w*?)\\.sgf", data)[0]
+        gameids = list(itertools.imap(lambda x: x.lstrip('0'), 
+                       itertools.takewhile(lambda x: not x == last_game_id, 
+                       ("%s%s%s" % (a, b, c) for a in string.digits for b in 
+                       string.ascii_lowercase for c in string.ascii_lowercase
+                       )))) + [last_game_id]
+        gameid_cache[self.source_id] = gameids
+
+    def load_gameids(self):
+        gfile = gio.File(self.game_list_url)
+        gfile.load_contents_async(self._load_gameid_cb)
+        
+    def _load_gameid_cb(self, gfile, result):
+        data = gfile.load_contents_finish(result)[0]
+        self.gameids_from_data(data)
         
 class EidoGoSource(WebSGFSource):
 
@@ -191,10 +216,21 @@ class EidoGoSource(WebSGFSource):
     game_url_str = "http://eidogo.com/backend/download.php?id=%s"
     
     def get_gameids(self):
-        filehandle = urllib2.urlopen(self.game_list_url)
-        data = filehandle.read()
-        filehandle.close()
-        return re.findall("<td><a href=\"\\./#(.*?)\">", data)
+        gfile = gio.File(self.game_list_url)
+        data = gfile.read().read()
+        self.gameids_from_data(self, data)
+
+    def gameids_from_data(self, data):
+        gameids = re.findall("<td><a href=\"\\./#(.*?)\">", data)
+        gameid_cache[self.source_id] = gameids
+        
+    def load_gameids(self):
+        gfile = gio.File(self.game_list_url)
+        gfile.load_contents_async(self._load_gameid_cb)
+        
+    def _load_gameid_cb(self, gfile, result):
+        data = gfile.load_contents_finish(result)[0]
+        self.gameids_from_data(data)
         
 class MultiSource(SGFSource):
     

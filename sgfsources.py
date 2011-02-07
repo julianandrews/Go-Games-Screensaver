@@ -190,7 +190,7 @@ class GoKifuSource(WebSGFSource):
     def get_gameids(self):
         gfile = gio.File(self.game_list_url)
         data = gfile.read().read()
-        self.gameds_from_data(data)
+        self.gameids_from_data(data)
         
     def gameids_from_data(self, data):
         last_game_id = re.findall("/f/(\\w*?)\\.sgf", data)[0]
@@ -217,7 +217,7 @@ class EidoGoSource(WebSGFSource):
     def get_gameids(self):
         gfile = gio.File(self.game_list_url)
         data = gfile.read().read()
-        self.gameids_from_data(self, data)
+        self.gameids_from_data(data)
 
     def gameids_from_data(self, data):
         gameids = re.findall("<td><a href=\"\\./#(.*?)\">", data)

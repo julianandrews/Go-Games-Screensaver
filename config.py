@@ -97,6 +97,8 @@ class Configuration(dict):
                           help="use games from gokifu.com")
         parser.add_option("--eidogo", action="store_true", 
                           help="use games from eidogo.com")
+        parser.add_option("-c", dest="config", action="store_true",
+                          help="open the configuration dialog")
         options, args = parser.parse_args()
         if options.kgs:
             self['sources'].append('kgs')
@@ -111,6 +113,8 @@ class Configuration(dict):
             self['annotations'] = 0
         if options.nomarkup:
             self['markup'] = 0
+        if options.config:
+            self['mode'] = 'c'
 
 class SSConfigWindow(gtk.Window):
     def __init__(self, conf):

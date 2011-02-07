@@ -22,8 +22,9 @@
 #
 # Todo
 #   improve kgs and eidogo game_uri acquisition
+#   timeout on game list acquisition failure
 
-import contextlib
+import gio
 import gobject
 import itertools
 import os
@@ -32,7 +33,7 @@ import random
 import re
 import string
 import sys
-import urllib2
+import time
 
 import gogame
 
@@ -46,26 +47,51 @@ except IOError:
     gameid_cache = {}
 
 class SGFSource(object):
+    preload_count = 5
 
     def __init__(self):
+        self.preloaded_data = []
         self.get_game_uris()
 
     def get_random_game(self):
+        if self.preloaded_data == []:
+            data = self.load_random_game()
+        else:
+            data = self.preloaded_data.pop(0)
+        game_node = self.game_node_from_data(data)
+        if game_node is None:
+            return self.get_random_game()
+        else:
+            for i in range(self.preload_count - len(self.preloaded_data)):
+                self.preload_random_game()
+            return game_node
+            
+    def load_random_game(self):
+        uri = random.choice(self.game_uris)
+        gfile = gio.File(uri)
+        return gfile.read().read()
+
+    def preload_random_game(self):
+        uri = random.choice(self.game_uris)
+        gfile = gio.File(uri)
+        gfile.load_contents_async(self._file_load_cb)
+
+    def _file_load_cb(self, gfile, result):
+        data = gfile.load_contents_finish(result)[0]
+        self.preloaded_data.append(data)
+
+    def game_node_from_data(self, data):
         game_node = None
-        while game_node == None:
-            uri = random.choice(self.game_uris)
-            try:
-                with self.uri_open(uri) as f:
-                    data = f.read()
-                collection = gogame.game_nodes_from_data(data)
-                game_node = collection[0]
-            except gogame.GogameError, e:
-                self.game_uris.remove(uri)
-                if not e.data == "":
-                    print "Error reading file, trying again"
-                    if save_bad_sgf_data:
-                        with open(self._save_sgf_filename(), 'w') as f:
-                            f.write(e.data)
+        try:
+            collection = gogame.game_nodes_from_data(data)
+            game_node = collection[0]
+        except gogame.GogameError, e:
+            self.game_uris.remove(uri)
+            if not e.data == "":
+                print "Error reading file, trying again"
+                if save_bad_sgf_data:
+                    with open(self._save_sgf_filename(), 'w') as f:
+                        f.write(e.data)
         return game_node
 
     @staticmethod
@@ -75,7 +101,6 @@ class SGFSource(object):
         return os.path.join(data_folder, "sgf_fail", "%s.sgf" % num)
 
 class FileSource(SGFSource):
-    uri_open = open
     default_sgf_folder = os.path.join(data_folder, "sgf")
     
     def __init__(self, sgf_folder=None):
@@ -84,7 +109,7 @@ class FileSource(SGFSource):
 
     def get_game_uris(self):
         self.game_uris = []
-        if not self.sgf_folder == None:
+        if not self.sgf_folder is None:
             if os.path.isdir(self.sgf_folder):
                 self.game_uris = filter(lambda x: os.path.splitext(x)[-1] == 
                                         ".sgf", os.listdir(self.sgf_folder))
@@ -96,16 +121,13 @@ class FileSource(SGFSource):
 
 class WebSGFSource(SGFSource):
     backup_source = FileSource()
+    timeout = 3
     
     def __init__(self):
         self.source_id = [k for k, v in source_id_map.iteritems() if 
                                                              v == type(self)][0]
         super(WebSGFSource, self).__init__()
-    
-    @staticmethod
-    def uri_open(uri):
-        return contextlib.closing(urllib2.urlopen(uri))
-    
+
     def get_game_uris(self):
         gameids = gameid_cache.get(self.source_id, [])
         if len(gameids) == 0:
@@ -115,6 +137,7 @@ class WebSGFSource(SGFSource):
             gobject.idle_add(self.refresh_game_uris)
             
     def refresh_game_uris(self):
+        print "refreshing uris"
         global gameid_cache
         gameids = self.get_gameids()
         self.game_uris = [self.game_url_str % x for x in gameids]

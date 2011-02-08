@@ -23,9 +23,9 @@
 # Todo
 #   improve kgs and eidogo game_uri acquisition
 #   timeout on failed reads
-#   handle gameid acquisition failure
 
 import gio
+import glib
 import gobject
 import itertools
 import os
@@ -69,6 +69,8 @@ class SGFSource(object):
             return game_node
             
     def load_random_game(self):
+        if self.game_uris == []:
+            return None
         uri = random.choice(self.game_uris)
         gfile = gio.File(uri)
         try:
@@ -78,9 +80,10 @@ class SGFSource(object):
         return data
 
     def preload_random_game(self):
-        uri = random.choice(self.game_uris)
-        gfile = gio.File(uri)
-        gfile.load_contents_async(self._file_load_cb)
+        if not self.game_uris == []:
+            uri = random.choice(self.game_uris)
+            gfile = gio.File(uri)
+            gfile.load_contents_async(self._file_load_cb)
 
     def _file_load_cb(self, gfile, result):
         try:
@@ -141,7 +144,7 @@ class WebSGFSource(SGFSource):
     def get_game_uris(self):
         if gameid_cache.get(self.source_id) in ([], None):
             self.get_gameids()
-        gameids = gameid_cache[self.source_id]
+        gameids = gameid_cache.get(self.source_id, [])
         self.game_uris = [self.game_url_str % x for x in gameids]
         self.load_gameids()
         
@@ -151,15 +154,18 @@ class WebSGFSource(SGFSource):
         
 class KGSSource(WebSGFSource):
 
-    game_list_url = "http://kgs.fuseki.info/games_list.php?sb=full&bs=wr"
+    game_list_url = "http://kgs.fuseki.info/games_list.php?bs=wr"
     game_url_str = "http://kgs.fuseki.info/save_game.php?id=%s"
     min_gameid_count = 1000
         
     def get_gameids(self):
         gfile = gio.File(self.game_list_url)
-        data = gfile.read().read()
-        gameid_cache[self.source_id] = re.findall(
+        try:
+            data = gfile.load_contents()[0]
+            gameid_cache[self.source_id] = re.findall(
                                            "OpenGame\\(\\'(\\w*?)\\'\\)", data)
+        except glib.GError:
+            print "Error getting KGS gameids"
 
     def load_gameids(self):
         gameid_cache[self.source_id] = []
@@ -189,8 +195,11 @@ class GoKifuSource(WebSGFSource):
 
     def get_gameids(self):
         gfile = gio.File(self.game_list_url)
-        data = gfile.read().read()
-        self.gameids_from_data(data)
+        try:
+            data = gfile.load_contents()[0]
+            self.gameids_from_data(data)
+        except glib.GError:
+            print "Error getting GoKifu gameids"
         
     def gameids_from_data(self, data):
         last_game_id = re.findall("/f/(\\w*?)\\.sgf", data)[0]
@@ -216,8 +225,11 @@ class EidoGoSource(WebSGFSource):
     
     def get_gameids(self):
         gfile = gio.File(self.game_list_url)
-        data = gfile.read().read()
-        self.gameids_from_data(data)
+        try:
+            data = gfile.load_contents()[0]
+            self.gameids_from_data(data)
+        except glib.GError:
+            print "Error getting Eidogo gameids"
 
     def gameids_from_data(self, data):
         gameids = re.findall("<td><a href=\"\\./#(.*?)\">", data)

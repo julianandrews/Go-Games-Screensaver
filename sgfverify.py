@@ -170,8 +170,8 @@ def verify_node(node, ff=1):
     for child in node.child_nodes:
         verify_node(child, ff)
 
-def convert_node(node):
-    """Convert a node from FF[1]-[3] to FF[4].  Do not call on FF[4] files!"""
+def convert_node(node, ff):
+    """Convert a node and its children from FF[1]-[3] to FF[4]."""
     for prop_id in node.keys():
         value = node[prop_id]
         new_prop_id = filter(lambda x: x.isupper(), prop_id)
@@ -179,19 +179,20 @@ def convert_node(node):
             node[new_prop_id] = value
             del node[prop_id]
         prop_id = new_prop_id
-        if prop_id == 'M':
+        if prop_id == 'M' and ff in (1, 2):
             node['MA'] = value
             del node['M']
-        if prop_id in ('B', 'W') and value == ['tt']:
+        if prop_id in ('B', 'W') and value == ['tt'] and ff in (1, 2, 3):
             node[prop_id] = ['']
-        if prop_id == 'L':
+        if prop_id == 'L' and ff in (1, 2):
             node['LB'] += ["%s:%s" % (x, l) for x, l in zip(value, 
                            string.uppercase)]
             del node['L']
-        if prop_id == 'VW' and len(value) == 2:
+        if prop_id == 'VW' and len(value) == 2 and ff in (1, 2, 3):
             node['VW'] = ["%s:%s" % value]
     all_prop_types = _get_all_prop_types(node)
-    if all_prop_types.get('setup') and all_prop_types.get('move'):
+    if all_prop_types.get('setup') and all_prop_types.get('move') and \
+                                                               ff in (1, 2, 3):
         new_node = sgfparse.Node()
         new_node.text = node.text
         for prop_id in node.keys():
@@ -205,7 +206,7 @@ def convert_node(node):
         node.child_nodes = [new_node]
         new_node.parent = node
     for child in node.child_nodes:
-        convert_node(child)
+        convert_node(child, ff)
 
 def _get_all_prop_types(node):
     property_details = _get_property_details(node)

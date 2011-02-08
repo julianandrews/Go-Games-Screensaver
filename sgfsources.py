@@ -26,7 +26,6 @@
 
 import gio
 import glib
-import gobject
 import itertools
 import os
 import pickle
@@ -34,6 +33,7 @@ import random
 import re
 import string
 import sys
+import warnings
 
 import gogame
 
@@ -74,7 +74,7 @@ class SGFSource(object):
         uri = random.choice(self.game_uris)
         gfile = gio.File(uri)
         try:
-            data = gfile.read().read()
+            data = gfile.load_contents()[0]
         except glib.GError:
             data = None
         return data
@@ -99,16 +99,17 @@ class SGFSource(object):
             game_node = collection[0]
         except gogame.GogameError, e:
             if not e.data == "":
-                print "Error reading file, trying again"
                 if save_bad_sgf_data:
                     self.save_sgf(e.data)
         return game_node
 
     @staticmethod
     def save_sgf(data):
+        folder = os.path.join(data_folder, "sgf_fail")
         num = ([0] + sorted(int(a) for a, b in map(os.path.splitext, 
-               os.listdir('.')) if b == '.sgf'))[-1] + 1
-        filename = os.path.join(data_folder, "sgf_fail", "%s.sgf" % num)
+               os.listdir(folder)) if b == '.sgf'))[-1] + 1
+        filename = os.path.join(folder, "%s.sgf" % num)
+        warnings.warn("Error reading file, saving to '%s'" % filename)
         with open(filename, 'w') as f:
             f.write(data)
 
@@ -123,8 +124,10 @@ class FileSource(SGFSource):
         self.game_uris = []
         if not self.sgf_folder is None:
             if os.path.isdir(self.sgf_folder):
-                self.game_uris = filter(lambda x: os.path.splitext(x)[-1] == 
+                filenames = filter(lambda x: os.path.splitext(x)[-1] == 
                                         ".sgf", os.listdir(self.sgf_folder))
+                self.game_uris = [os.path.join(self.sgf_folder, f) for f in 
+                                  filenames]
         if self.game_uris == []:
             self.sgf_folder = self.default_sgf_folder
             filenames = filter(lambda x: os.path.splitext(x)[-1] == ".sgf", 
@@ -148,6 +151,18 @@ class WebSGFSource(SGFSource):
         self.game_uris = [self.game_url_str % x for x in gameids]
         self.load_gameids()
         
+    def load_gameids(self):
+        gfile = gio.File(self.game_list_url)
+        gfile.load_contents_async(self._load_gameid_cb)
+        
+    def _load_gameid_cb(self, gfile, result):
+        try:
+            data = gfile.load_contents_finish(result)[0]
+            self.gameids_from_data(data)
+        except glib.GError, e:
+            warnings.warn("Error in gameid callback for %s:\n%s" % 
+                          (self.source_id, e.message))
+        
     def save_gameid_cache(self):
         with open(os.path.join(data_folder, gameid_cache_file), 'w') as f:
             pickle.dump(gameid_cache, f)
@@ -165,7 +180,7 @@ class KGSSource(WebSGFSource):
             gameid_cache[self.source_id] = re.findall(
                                            "OpenGame\\(\\'(\\w*?)\\'\\)", data)
         except glib.GError:
-            print "Error getting KGS gameids"
+            warnings.warn("Error getting KGS gameids.")
 
     def load_gameids(self):
         gameid_cache[self.source_id] = []
@@ -186,7 +201,7 @@ class KGSSource(WebSGFSource):
             else:
                 self.save_gameid_cache()
         except glib.GError:
-            print 'error'
+            warnings.warn("Error in callback getting KGS gameids.")
 
 class GoKifuSource(WebSGFSource):
 
@@ -199,7 +214,7 @@ class GoKifuSource(WebSGFSource):
             data = gfile.load_contents()[0]
             self.gameids_from_data(data)
         except glib.GError:
-            print "Error getting GoKifu gameids"
+            warnings.warn("Error getting GoKifu gameids: %e", e)
         
     def gameids_from_data(self, data):
         last_game_id = re.findall("/f/(\\w*?)\\.sgf", data)[0]
@@ -209,14 +224,6 @@ class GoKifuSource(WebSGFSource):
                        string.ascii_lowercase for c in string.ascii_lowercase
                        )))) + [last_game_id]
         gameid_cache[self.source_id] = gameids
-
-    def load_gameids(self):
-        gfile = gio.File(self.game_list_url)
-        gfile.load_contents_async(self._load_gameid_cb)
-        
-    def _load_gameid_cb(self, gfile, result):
-        data = gfile.load_contents_finish(result)[0]
-        self.gameids_from_data(data)
         
 class EidoGoSource(WebSGFSource):
 
@@ -229,26 +236,25 @@ class EidoGoSource(WebSGFSource):
             data = gfile.load_contents()[0]
             self.gameids_from_data(data)
         except glib.GError:
-            print "Error getting Eidogo gameids"
+            warnings.warn("Error getting Eidogo gameids.")
 
     def gameids_from_data(self, data):
         gameids = re.findall("<td><a href=\"\\./#(.*?)\">", data)
         gameid_cache[self.source_id] = gameids
-        
-    def load_gameids(self):
-        gfile = gio.File(self.game_list_url)
-        gfile.load_contents_async(self._load_gameid_cb)
-        
-    def _load_gameid_cb(self, gfile, result):
-        data = gfile.load_contents_finish(result)[0]
-        self.gameids_from_data(data)
+
         
 class MultiSource(SGFSource):
     
-    def __init__(self, source_ids):
-        self.sources = tuple(source_id_map[sid]() for sid in source_ids)
+    def __init__(self, source_ids, sgf_folder=None):
+        self.sources = []
+        for sid in source_ids:
+            if sid == 'file':
+                source = source_id_map[sid](sgf_folder)
+            else:
+                source = source_id_map[sid]()
+            self.sources.append(source)
         if self.sources == ():
-            self.sources = (FileSource(), )
+            self.sources = (FileSource(sgf_folder), )
     
     def get_random_game(self):
         return random.choice(self.sources).get_random_game()

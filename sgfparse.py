@@ -26,6 +26,7 @@
 import collections
 import simpleparse.parser
 import simpleparse.dispatchprocessor
+import warnings
 
 _EBNFDeclaration = r"""
     Collection := WhiteSpace*, GameTree, (WhiteSpace*, GameTree)*
@@ -88,9 +89,11 @@ class _SGFProcessor(simpleparse.dispatchprocessor.DispatchProcessor):
                                                                subtags), buff)
         n.text = text
         for prop in props:
-            if not n.get(prop[0]) == None:
-                raise SGFParseError("Duplicate '%s' property in node '%s'" % 
-                                    (prop[0], text))
+            if not n.get(prop[0]) is None:
+                # Erase duplicate properties and issue a warning!
+                warnings.warn("Duplicate '%s' property in node '%s'" % 
+                              (prop[0], text))
+                continue
             n[prop[0]] += prop[1:]
         return n
 

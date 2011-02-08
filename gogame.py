@@ -36,7 +36,7 @@ class GogameError(Exception):
         self.data = data
         
     def __str__(self):
-        return "Error Generating Gogame - %s" % value
+        return "Error Generating Gogame - %s" % self.value
 
 class Goban(dict):
 
@@ -219,13 +219,15 @@ def game_nodes_from_data(data):
     for node in c:
         try:
             sgfverify.verify_node(node)
+
         except sgfverify.SGFVerifyError, e:
             raise GogameError("SGF verification failed: %s" % e.value, data)
-        if not node.get("FF") == ['4']:
-            sgfverify.convert_node(node)
-        if not node.get("GM", ['1']) == ['1']:
+        ff = int(node.get('FF', ['1'])[0])
+        if ff == 4:
+            sgfverify.convert_node(node, ff)
+        if not node.get('GM', ['1']) == ['1']:
             raise GogameError("SGF is not a Go Game!", data)
-        if not node.get("SZ") in (['19'], ['13'], ['9'], None):
-            raise GogameError("Unsupported board size property: %s" % node["SZ"], data)
+        if not node.get('SZ') in (['19'], ['13'], ['9'], None):
+            raise GogameError("Unsupported board size property: %s" % node['SZ'], data)
     return map(GameNode, c)
 

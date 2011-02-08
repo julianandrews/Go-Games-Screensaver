@@ -21,7 +21,7 @@
 # best to distribute it.
 #
 # Todo:
-#   Restructure config data so all meta-info is stored in one structure
+#   Restructure config data to simplify code
 
 import gtk
 import optparse
@@ -91,30 +91,43 @@ class Configuration(dict):
                           help="disable annotations")
         parser.add_option("-k", dest="nomarkup", action="store_true", 
                           help="disable markup")
+        parser.add_option("-f", dest="fullscreen", action="store_true",
+                          help="fullscreen mode")
         parser.add_option("--kgs", action="store_true", 
                           help="use games from kgs.fuseki.info")
         parser.add_option("--gokifu", action="store_true", 
                           help="use games from gokifu.com")
         parser.add_option("--eidogo", action="store_true", 
                           help="use games from eidogo.com")
+        parser.add_option("--file", action="store_true", 
+                          help="use games from local files")
         parser.add_option("-c", dest="config", action="store_true",
                           help="open the configuration dialog")
+        parser.add_option("--dark", dest="dark", action="store_true",
+                          help="make the board dark")
         options, args = parser.parse_args()
-        if options.kgs:
-            self['sources'].append('kgs')
-        elif options.gokifu:
-            self['sources'].append('gokifu')
-        elif options.eidogo:
-            self['sources'].append('eidogo')
+        if options.kgs or options.gokifu or options.eidogo or options.file:
+            self['sources'] = []
+            if options.file:
+                self['sources'].append('file')
+            if options.kgs:
+                self['sources'].append('kgs')
+            if options.gokifu:
+                self['sources'].append('gokifu')
+            if options.eidogo:
+                self['sources'].append('eidogo')    
         self['move_delay'] = options.move_delay or self['move_delay']
         self['start_delay'] = options.start_delay or self['start_delay']
         self['end_delay'] = options.end_delay or self['end_delay']
+        self['sgf_folder'] = options.sgf_folder or self['sgf_folder']
         if options.noannotations:
             self['annotations'] = 0
         if options.nomarkup:
             self['markup'] = 0
         if options.config:
             self['mode'] = 'c'
+        self['dark'] = options.dark
+        self['fullscreen'] = options.fullscreen
 
 class SSConfigWindow(gtk.Window):
     def __init__(self, conf):

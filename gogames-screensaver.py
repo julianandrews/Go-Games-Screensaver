@@ -24,9 +24,9 @@
 #
 # Todo
 #   Support LB markup property
-#   Display Pass moves
-#   Rework text formating
 #   Clean up VW property
+#   Display Pass moves?
+#   Optionally draw coordinates around board edge?
 
 import cairo
 import gtk
@@ -53,7 +53,7 @@ class GobanHBox(gtk.HBox):
     
     def __init__(self):
         gtk.HBox.__init__(self)
-        self.sgf_source = sgfsources.MultiSource(conf['sources'])
+        self.sgf_source = sgfsources.MultiSource(conf['sources'], conf['sgf_folder'])
         self.goban_display = GobanDisplay()
         self.pack_start(self.goban_display)
         self.abox = AnnotationDisplay()
@@ -422,6 +422,9 @@ class GobanDisplay(gtk.DrawingArea):
         cr.paint()
         if conf['markup']:
             self.draw_markup(cr)
+        if conf.get('dark'):
+            cr.set_source_rgba(0, 0, 0, 0.80)
+            cr.paint()
         
     def gen_board(self):
         scale = self.get_scale()
@@ -584,6 +587,8 @@ if __name__ == "__main__":
     else:
         window = SSWindow()
         window.modify_bg(gtk.STATE_NORMAL, gtk.gdk.Color(0, 0, 0, 0))
+        if conf["fullscreen"]:
+            window.fullscreen()
         window.add(GobanHBox())
     window.show_all()
     gtk.main()

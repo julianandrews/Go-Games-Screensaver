@@ -16,15 +16,9 @@
 		1
 	</annotations>
 	<sgf_folder>
-		E:\julian\coding\gogames-screensaver\data\sgf
+		\usr\share\gogames-screensaver\sgf
 	</sgf_folder>
 	<source>
-		kgs
-	</source>
-	<source>
-		gokifu
-	</source>
-	<source>
-		eidogo
+		file
 	</source>
 </config>

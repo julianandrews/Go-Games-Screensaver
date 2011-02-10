@@ -21,6 +21,8 @@
 #   improve kgs and eidogo game_uri acquisition
 #   timeout on failed reads
 
+import time #testing!
+
 import gio
 import glib
 import itertools
@@ -34,11 +36,11 @@ import warnings
 
 import gogame
 
-from os_wrapper import data_folder
-save_bad_sgf_data = True
+from os_wrapper import data_folder, config_folder
+save_bad_sgf_data = False
 gameid_cache_file = "gameid_cache"
 try:
-    with open(os.path.join(data_folder, gameid_cache_file)) as f:
+    with open(os.path.join(config_folder, gameid_cache_file)) as f:
         gameid_cache = pickle.load(f)
 except IOError:
     gameid_cache = {}
@@ -102,7 +104,11 @@ class SGFSource(object):
 
     @staticmethod
     def save_sgf(data):
-        folder = os.path.join(data_folder, "sgf_fail")
+        folder = os.path.join(config_folder, "sgf_fail")
+        if not os.path.isdir(folder):
+            if not os.path.isdir(config_folder):
+                os.mkdir(config_folder)
+            os.mkdir(folder)
         num = ([0] + sorted(int(a) for a, b in map(os.path.splitext, 
                os.listdir(folder)) if b == '.sgf'))[-1] + 1
         filename = os.path.join(folder, "%s.sgf" % num)
@@ -135,6 +141,7 @@ FileSource.backup_source = FileSource()
 
 class WebSGFSource(SGFSource):
     backup_source = FileSource()
+    startup_delay = 3000
     
     def __init__(self):
         self.source_id = [k for k, v in source_id_map.iteritems() if 
@@ -146,22 +153,24 @@ class WebSGFSource(SGFSource):
             self.get_gameids()
         gameids = gameid_cache.get(self.source_id, [])
         self.game_uris = [self.game_url_str % x for x in gameids]
-        self.load_gameids()
+        glib.timeout_add(self.startup_delay, self.preload_gameids)
         
-    def load_gameids(self):
+    def preload_gameids(self):
+        gameid_cache[self.source_id] = []
         gfile = gio.File(self.game_list_url)
-        gfile.load_contents_async(self._load_gameid_cb)
+        gfile.load_contents_async(self._preload_gameid_cb)
         
-    def _load_gameid_cb(self, gfile, result):
+    def _preload_gameid_cb(self, gfile, result):
         try:
             data = gfile.load_contents_finish(result)[0]
             self.gameids_from_data(data)
+            self.save_gameid_cache()
         except glib.GError, e:
             warnings.warn("Error in gameid callback for %s:\n%s" % 
                           (self.source_id, e.message))
         
     def save_gameid_cache(self):
-        with open(os.path.join(data_folder, gameid_cache_file), 'w') as f:
+        with open(os.path.join(config_folder, gameid_cache_file), 'w') as f:
             pickle.dump(gameid_cache, f)
         
 class KGSSource(WebSGFSource):
@@ -179,12 +188,7 @@ class KGSSource(WebSGFSource):
         except glib.GError:
             warnings.warn("Error getting KGS gameids.")
 
-    def load_gameids(self):
-        gameid_cache[self.source_id] = []
-        gfile = gio.File(self.game_list_url)
-        gfile.load_contents_async(self._load_gameid_cb)
-
-    def _load_gameid_cb(self, gfile, result):
+    def _preload_gameid_cb(self, gfile, result):
         try:
             data = gfile.load_contents_finish(result)[0]
             gameid_cache[self.source_id] += \
@@ -212,7 +216,7 @@ class GoKifuSource(WebSGFSource):
             self.gameids_from_data(data)
         except glib.GError:
             warnings.warn("Error getting GoKifu gameids: %e", e)
-        
+
     def gameids_from_data(self, data):
         last_game_id = re.findall("/f/(\\w*?)\\.sgf", data)[0]
         gameids = list(itertools.imap(lambda x: x.lstrip('0'), 

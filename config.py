@@ -23,14 +23,16 @@
 import gtk
 import optparse
 import os
+import shutil
 import xml.dom.minidom
 from xml.dom.minidom import getDOMImplementation
 
-from os_wrapper import data_folder, get_mode
+from os_wrapper import data_folder, config_folder, get_mode
 
 class Configuration(dict):
 
-    filename = os.path.join(data_folder, 'config.xml')
+    filename = 'config.xml'
+    default_filename = 'default_config.xml'
     xml_props = ('move_delay', 'start_delay', 'end_delay','markup', 
                  'annotations', 'sgf_folder')
     xml_prop_types = (int, int, int, int, int, str)
@@ -55,12 +57,18 @@ class Configuration(dict):
             data_node.appendChild(xml_doc.createTextNode(source))
             xml_doc.documentElement.appendChild(data_node)
         xml = xml_doc.toprettyxml()
-        with open(self.filename, 'w') as f:
+        with open(os.path.join(config_folder, self.filename), 'w') as f:
             f.write(xml)
         
     def load(self):
+        if not os.path.isfile(os.path.join(config_folder, self.filename)):
+            if not os.path.isdir(config_folder):
+                os.mkdir(config_folder)
+            shutil.copy(os.path.join(data_folder, self.default_filename), 
+                        os.path.join(config_folder, self.filename))
         self["sources"] = []
-        xml_doc = xml.dom.minidom.parse(self.filename)
+        xml_doc = xml.dom.minidom.parse(os.path.join(config_folder, 
+                                                     self.filename))
         for node in xml_doc.firstChild.childNodes:
             if not node.nodeType == node.TEXT_NODE:
                 key = str(node.nodeName)

@@ -17,6 +17,7 @@
 #    along with Go Games Screensaver.  If not, see 
 #    <http://www.gnu.org/licenses/>.
 
+import os
 import platform
 
 s = platform.system()
@@ -24,9 +25,11 @@ s = platform.system()
 if s == 'Windows':
     from scr_windows import get_mode, WinSSWindow as SSWindow
     data_folder = "E:\\julian\\coding\\gogames-screensaver\\data"
+    config_folder = data_folder #Stupid hack for now
 elif s == 'Linux':
     from scr_linux import GsThemeWindow as SSWindow
     data_folder = "/usr/share/gogames-screensaver"
+    config_folder = os.path.join(os.getenv("HOME"), ".gogames-screensaver")
     def get_mode():
         return None, None
 else:

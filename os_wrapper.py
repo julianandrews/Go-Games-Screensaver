@@ -20,17 +20,15 @@
 import os
 import platform
 
-s = platform.system()
-
-if s == 'Windows':
+if platform.system() == 'Windows':
     from scr_windows import get_mode, WinSSWindow as SSWindow
     data_folder = "E:\\julian\\coding\\gogames-screensaver\\data"
     config_folder = data_folder #Stupid hack for now
-elif s == 'Linux':
+elif platform.system() == 'Linux':
     from scr_linux import GsThemeWindow as SSWindow
     data_folder = "/usr/share/gogames-screensaver"
     config_folder = os.path.join(os.getenv("HOME"), ".gogames-screensaver")
     def get_mode():
         return None, None
 else:
-    raise RuntimeError("Unsuported OS: %s" % s)
+    raise RuntimeError("Unsuported OS: %s" % platform.system())

@@ -21,6 +21,7 @@
 
 import gtk
 import glib
+import warnings
 
 import annotation_display
 import config
@@ -70,7 +71,7 @@ class GobanHBox(gtk.HBox):
         game_node = self.sgf_source.get_random_game()
         if game_node is None:
             if self.timeout_count >= self.max_timeout_count:
-                print "Timed out getting a game - defaulting to local files"
+                warnings.warn("Timed out getting a game - defaulting to local files")
                 self.goban_display.game_node = \
                                       sgfsources.FileSource().get_random_game()
                 glib.timeout_add(conf['start_delay'], self.run)

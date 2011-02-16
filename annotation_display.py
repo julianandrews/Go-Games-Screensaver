@@ -122,11 +122,15 @@ class AnnotationDisplay(gtk.VBox):
             label.modify_font(self.font_desc)
         
     def pack_hr(self):
-        hr_pixbuf = gtk.gdk.Pixbuf(gtk.gdk.COLORSPACE_RGB, False, 8, 1000, 1)
-        hr_pixbuf.fill(0xffffffff)
-        hr_im = gtk.image_new_from_pixbuf(hr_pixbuf)
-        self.pack_start(hr_im, expand=False)
+        self.hr_im = gtk.Image()
+        self.set_hr_pixbuf(self.base_size * 200)
+        self.pack_start(self.hr_im, expand=False)
     
+    def set_hr_pixbuf(self, size):
+        pixbuf = gtk.gdk.Pixbuf(gtk.gdk.COLORSPACE_RGB, False, 8, 500, 1)
+        pixbuf.fill(0xffffffff)
+        self.hr_im.set_from_pixbuf(pixbuf)
+
     def pack_annotation_display(self):
         self.text_view = gtk.TextView()
         self.text_view.set_editable(False)
@@ -149,7 +153,8 @@ class AnnotationDisplay(gtk.VBox):
         for label in self.labels:
             label.modify_font(self.font_desc)
         self.text_view.modify_font(self.font_desc)
-        self.vbox.set_spacing(int(scale*self.game_info_spacing))
+        self.vbox.set_spacing(int(scale * self.game_info_spacing))
+        self.set_hr_pixbuf(int(scale * self.base_size * 200))
         
     def update_text_output(self):
         self.update_game_info()

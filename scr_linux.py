@@ -47,5 +47,5 @@ class GsThemeWindow(gtk.Window):
                 wclass=gtk.gdk.INPUT_OUTPUT,
                 event_mask=self.get_events() | gtk.gdk.EXPOSURE_MASK)
         self.window.set_user_data(self)
-        self.style.attach(self.window)
         self.set_flags(self.flags() | gtk.REALIZED)
+        self.style.attach(self.window)

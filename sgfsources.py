@@ -120,6 +120,7 @@ class FileSource(SGFSource):
                 self.game_uris = [os.path.join(self.sgf_folder, f) for f in 
                                   filenames]
         if self.game_uris == []:
+            warnings.warn("No sgf files found in folder - using default folder")
             self.sgf_folder = self.default_sgf_folder
             filenames = filter(lambda x: os.path.splitext(x)[-1] == ".sgf", 
                                os.listdir(self.sgf_folder))

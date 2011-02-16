@@ -126,6 +126,13 @@ class FileSource(SGFSource):
             self.game_uris = [os.path.join(self.sgf_folder, x) for x in filenames]
         self.preload_game()
 
+    def preload_game(self):
+        if not self.game_uris == []:
+            uri = random.choice(self.game_uris)
+            gfile = gio.File(uri)
+            data = gfile.load_contents()[0]
+            self.preloaded_data.append((data, uri))
+
 class WebSGFSource(SGFSource):
     startup_delay = 500
     

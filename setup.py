@@ -43,7 +43,7 @@ setup(name = 'Go Games',
       description = 'A scressnsaver which displays go games from sgf files.',
       author = 'Julian Andrews',
       windows = [{'script': 'gogames-screensaver.py',
-                  'icon_resources': [(1,'data/images/icon.ico')]}],
+                  'icon_resources': [(1,'misc/icon.ico')]}],
       options = opts,
       zipfile = None)
 if os.access("dist/Go Games.scr", os.F_OK):

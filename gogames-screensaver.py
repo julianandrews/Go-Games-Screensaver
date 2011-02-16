@@ -35,6 +35,8 @@ class GobanHBox(gtk.HBox):
     margin_ratio = 0.07
     abox_ratio = 0.3
     abox_margin = 0.02
+    new_game_wait = 100
+    max_timeout_count = 20
     
     def __init__(self):
         gtk.HBox.__init__(self)
@@ -46,6 +48,7 @@ class GobanHBox(gtk.HBox):
         self.abox = annotation_display.AnnotationDisplay()
         if conf['annotations']:
             self.pack_start(self.abox)
+        self.timeout_count = 0
         self.new_game()
         
     def do_size_allocate(self, alloc):
@@ -62,16 +65,26 @@ class GobanHBox(gtk.HBox):
         self.abox.size_allocate((int(x + height * (1.0 + self.abox_margin)), 
                                  int(y + height * self.abox_margin), 
                                  int(width - height * (1.0 - self.abox_margin)), 
-                                 int(height * (1.0 - 2 * self.abox_margin))))
-
-    def load_game_node(self):
-        self.goban_display.game_node = self.sgf_source.get_random_game()
-        self.goban_display.queue_draw()
-        self.update_annotations()
-        
+                                 int(height * (1.0 - 2 * self.abox_margin))))        
     def new_game(self):
-        self.load_game_node()
-        glib.timeout_add(conf['start_delay'], self.run)
+        game_node = self.sgf_source.get_random_game()
+        if game_node is None:
+            if self.timeout_count >= self.max_timeout_count:
+                print "Timed out getting a game - defaulting to local files"
+                self.goban_display.game_node = \
+                                      sgfsources.FileSource().get_random_game()
+                glib.timeout_add(conf['start_delay'], self.run)
+                self.timeout_count = 0
+                self.goban_display.queue_draw()
+                self.update_annotations()
+            else:
+                glib.timeout_add(self.new_game_wait, self.new_game)
+                self.timeout_count += 1
+        else:
+            self.goban_display.game_node = game_node
+            glib.timeout_add(conf['start_delay'], self.run)
+            self.goban_display.queue_draw()
+            self.update_annotations()
     
     def run(self):
         if not self.goban_display.game_node.child_nodes == []:

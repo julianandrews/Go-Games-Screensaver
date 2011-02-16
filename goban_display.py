@@ -69,9 +69,10 @@ class GobanDisplay(gtk.DrawingArea):
 
     def do_expose_event(self, event):
         new_size = self.window.get_size()
-        if not (new_size == self.size and self.game_node.goban.size == 
-                                                               self.board_size):
-            self.board_size = self.game_node.goban.size
+        if not (new_size == self.size and (self.game_node is None or 
+                                self.game_node.goban.size == self.board_size)):
+            if not self.game_node is None:
+                self.board_size = self.game_node.goban.size
             self.size = new_size
             self.gen_board()
             self.current_stones = {}
@@ -162,10 +163,11 @@ class GobanDisplay(gtk.DrawingArea):
         cr.fill()
     
     def draw(self, cr):
-        self.draw_stones()
+        if not self.game_node is None:
+            self.draw_stones()
         cr.set_source(cairo.SurfacePattern(self.board_cr.get_target()))
         cr.paint()
-        if self.markup:
+        if self.markup and not self.game_node is None:
             self.draw_markup(cr)
         if self.darken:
             cr.set_source_rgba(0, 0, 0, 0.80)

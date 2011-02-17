@@ -19,11 +19,17 @@
 #    along with Go Games Screensaver.  If not, see 
 #    <http://www.gnu.org/licenses/>.
 
-lib_folder = "/usr/share/gogames-screensaver/lib"
-
 import sys
-sys.path.insert(0, lib_folder)
 
-from gogames_screensaver import start
+try:
+    import lib
+except ImportError:
+    lib_folder = "/usr/share/gogames-screensaver"
+    sys.path.insert(0, lib_folder)
+    import lib
+
+sys.modules['gogames_screensaver'] = sys.modules['lib']
+
+from gogames_screensaver.gogames_screensaver import start
 
 start()

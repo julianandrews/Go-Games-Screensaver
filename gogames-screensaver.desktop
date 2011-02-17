@@ -2,8 +2,8 @@
 [Desktop Entry]
 Name=Go Games
 Comment=Plays through games of Go from .sgf files
-Exec=/usr/bin/gogames-screensaver
-TryExec=/usr/bin/gogames-screensaver
+Exec=gogames-screensaver
+TryExec=gogames-screensaver
 StartupNotify=false
 Terminal=false
 Type=Application

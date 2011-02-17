@@ -54,9 +54,9 @@ if platform.system() == "Windows":
     my_distclass = WindowsDistribution
 elif platform.system() == "Linux":
     my_distclass = LinuxDistribution
-    libdata_dir = "/usr/share/gogames-screensaver"
-    sys.argv.append("--install-lib=%s" % libdata_dir)
-    sys.argv.append("--install-data=%s" % libdata_dir)
+    base_dir = "/usr/share/gogames-screensaver"
+    sys.argv.append("--install-lib=%s" % base_dir)
+    sys.argv.append("--install-data=%s/data" % base_dir)
     sys.argv.append("--install-scripts=/usr/bin")
     
 modules = [os.path.splitext(fn)[0] for fn in glob.glob("lib/*.py")]

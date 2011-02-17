@@ -26,7 +26,9 @@ if platform.system() == 'Windows':
     config_folder = data_folder #Stupid hack for now
 elif platform.system() == 'Linux':
     from scr_linux import GsThemeWindow as SSWindow
-    data_folder = "/usr/share/gogames-screensaver"
+    data_folder = os.path.join(os.path.split(os.path.dirname(__file__))[0], 
+                               "data")
+    print data_folder
     config_folder = os.path.join(os.getenv("HOME"), ".gogames-screensaver")
     def get_mode():
         return None, None

@@ -19,16 +19,22 @@
 #    along with Go Games Screensaver.  If not, see 
 #    <http://www.gnu.org/licenses/>.
 
-lib_folder = "/home/julian/coding/gogames-screensaver/lib"
-
 import sys
-sys.path.insert(0, lib_folder)
+
+try:
+    import lib
+except ImportError:
+    lib_folder = "/usr/share/gogames-screensaver"
+    sys.path.insert(0, lib_folder)
+    import lib
+
+sys.modules['gogames_screensaver'] = sys.modules['lib']
 
 import gio
 import optparse
 
-import gogame
-import goban_display
+from gogames_screensaver import gogame
+from gogames_screensaver import goban_display
 
 move_num = 160
 parser = optparse.OptionParser(usage="usage: %prog [options] <input> <output>")

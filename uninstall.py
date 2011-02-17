@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env sh
 #
 # Copyright (c) 2010 Julian Andrews.
 # All rights reserved.
@@ -19,11 +19,10 @@
 #    along with Go Games Screensaver.  If not, see 
 #    <http://www.gnu.org/licenses/>.
 
-lib_folder = "/usr/share/gogames-screensaver/lib"
-
-import sys
-sys.path.insert(0, lib_folder)
-
-from gogames_screensaver import start
-
-start()
+unlink $(pkg-config --variable=themesdir gnome-screensaver)/gogames-screensaver.desktop
+rm -r /usr/share/gogames-screensaver
+rm /usr/bin/gogames-screensaver
+rm /usr/bin/gogames-sgf-thumbnailer
+gconftool-2 --direct \
+    --config-source xml:readwrite:/etc/gconf/gconf.xml.defaults \
+    --recursive-unset /desktop/gnome/thumbnailers/application@x-go-sgf

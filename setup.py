@@ -21,14 +21,13 @@ from distutils.core import setup, Distribution
 import glob
 import os
 import platform
+import sys
 
 class LinuxDistribution(Distribution):
+
     def __init__(self, *args):
         Distribution.__init__(self, *args)
         self.scripts = ["gogames-screensaver", "gogames-sgf-thumbnailer"]
-        self.options = "--install-lib=/usr/lib/gogames-screensaver " \
-                       "--install-data=/usr/share/gogames-screensaver " \
-                       "--install-scripts=/usr/bin"
 
 class WindowsDistribution(Distribution):
     def __init__(self, *args):
@@ -55,6 +54,10 @@ if platform.system() == "Windows":
     my_distclass = WindowsDistribution
 elif platform.system() == "Linux":
     my_distclass = LinuxDistribution
+    libdata_dir = "/usr/share/gogames-screensaver"
+    sys.argv.append("--install-lib=%s" % libdata_dir)
+    sys.argv.append("--install-data=%s" % libdata_dir)
+    sys.argv.append("--install-scripts=/usr/bin")
     
 modules = [os.path.splitext(fn)[0] for fn in glob.glob("lib/*.py")]
 
@@ -77,9 +80,28 @@ setup(name="Go Games",
                      "Topic :: Games/Entertainment :: Board Games"],
       data_files = [("images", glob.glob("data/images/*.svg")),
                     ("sgf", glob.glob("data/sgf/*.sgf"))],
+      requires = ["cairo", "gio", "glib", "gtk", "pango", "rsvg", 
+                  "simpleparse"],
       distclass = my_distclass)
       
 if platform.system() == "Windows":
     if os.access("dist/Go Games.scr", os.F_OK):
         os.remove("dist/Go Games.scr")
     os.rename("dist/gogames-screensaver.exe", "dist/Go Games.scr")
+elif platform.system() == "Linux":
+    ss_dir = os.popen("pkg-config --variable=themesdir gnome-screensaver").\
+                                                                read().strip()
+    with open("gogames-screensaver.desktop") as f:
+        data = f.read()
+    with open(os.path.join(ss_dir, "gogames-screensaver.desktop"), "w") as f:
+        f.write(data)
+    os.popen("gconftool-2 --direct "
+             "--config-source xml:readwrite:/etc/gconf/gconf.xml.defaults "
+             "--type bool "
+             "--set /desktop/gnome/thumbnailers/application@x-go-sgf/"
+             "enable true")
+    os.popen("gconftool-2 --direct "
+             "--config-source xml:readwrite:/etc/gconf/gconf.xml.defaults "
+             "--type string "
+             "--set /desktop/gnome/thumbnailers/application@x-go-sgf/"
+             "command \"/usr/bin/gogames-sgf-thumbnailer -s%s %u %o\"")

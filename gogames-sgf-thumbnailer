@@ -39,6 +39,7 @@ def create_thumbnail():
     options, args = parser.parse_args()
     if not len(args) == 2:
         parser.print_help()
+        sys.exit(0)
     uri, output_file = args
     gfile = gio.File(uri)
     try:

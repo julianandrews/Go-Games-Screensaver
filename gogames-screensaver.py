@@ -37,7 +37,7 @@ class GobanHBox(gtk.HBox):
     abox_ratio = 0.3
     abox_margin = 0.02
     new_game_wait = 100
-    max_timeout_count = 20
+    max_timeout_count = 40
     
     def __init__(self):
         gtk.HBox.__init__(self)

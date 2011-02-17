@@ -77,6 +77,20 @@ class GobanDisplay(gtk.DrawingArea):
                      event.area.width, event.area.height)
         cr.clip()
         self.draw(cr)
+        
+    def draw_to_file(self, size, filename):
+        draw_size = max(128, size)
+        self.gen_board(draw_size)
+        surf = cairo.ImageSurface(0, draw_size, draw_size)
+        self.draw(cairo.Context(surf))
+        if not draw_size == size:
+            new_surf = cairo.ImageSurface(0, size, size)
+            cr = cairo.Context(new_surf)
+            pat = cairo.SurfacePattern(surf)
+            cr.set_source(pat)
+            cr.paint()
+            surf = new_surf
+        surf.write_to_png(filename)
 
     @staticmethod
     def draw_MA(cr, offset, scale):

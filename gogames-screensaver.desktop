@@ -2,8 +2,8 @@
 [Desktop Entry]
 Name=Go Games
 Comment=Plays through games of Go from .sgf files
-Exec=/usr/lib/gnome-screensaver/gnome-screensaver/gogames-screensaver.py
-TryExec=/usr/lib/gnome-screensaver/gnome-screensaver/gogames-screensaver.py
+Exec=/usr/lib/gnome-screensaver/gnome-screensaver/gogames-screensaver
+TryExec=/usr/lib/gnome-screensaver/gnome-screensaver/gogames-screensaver
 StartupNotify=false
 Terminal=false
 Type=Application

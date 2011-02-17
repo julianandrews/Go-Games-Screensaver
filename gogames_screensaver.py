@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-#
 # Copyright (c) 2010 Julian Andrews.
 # All rights reserved.
 #
@@ -29,6 +27,8 @@ import goban_display
 import sgfsources
 
 from os_wrapper import *
+
+conf = config.Configuration()
         
 class GobanHBox(gtk.HBox):
     __gsignals__ = {'size-allocate': 'override'}
@@ -100,8 +100,7 @@ class GobanHBox(gtk.HBox):
         self.abox.prisoners = self.goban_display.game_node.goban.prisoners
         self.abox.update_text_output()
 
-if __name__ == "__main__":
-    conf = config.Configuration()
+def start():
     if conf.get('mode') == 'c':
         window = config.SSConfigWindow(conf)
     else:

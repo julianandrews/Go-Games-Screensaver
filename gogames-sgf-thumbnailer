@@ -27,7 +27,8 @@ import goban_display
 
 move_num = 160
 parser = optparse.OptionParser(usage="usage: %prog [options] <input> <output>")
-parser.add_option("-s", "--size", action="store", type="int", default=256, metavar="SIZE")
+parser.add_option("-s", "--size", action="store", type="int", default=256, 
+                  metavar="SIZE")
 
 def create_thumbnail():
     options, args = parser.parse_args()

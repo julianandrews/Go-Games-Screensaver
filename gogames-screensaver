@@ -19,6 +19,11 @@
 #    along with Go Games Screensaver.  If not, see 
 #    <http://www.gnu.org/licenses/>.
 
+lib_folder = "/home/julian/coding/gogames-screensaver/lib"
+
+import sys
+sys.path.insert(0, lib_folder)
+
 from gogames_screensaver import start
 
 start()

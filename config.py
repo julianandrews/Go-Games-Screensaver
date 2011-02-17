@@ -79,60 +79,43 @@ class Configuration(dict):
                     self[key] = self.xml_prop_dict[key](val)
             
     def parse_options(self):
-        parser = optparse.OptionParser()
-        parser.add_option("-d", dest="sgf_folder", 
+        parser = optparse.OptionParser(usage="usage: %prog [options]")
+        parser.add_option("-d", dest="sgf_folder", default=self['sgf_folder'],
                           help="directory containing sgf files to display", 
                           metavar="DIR")
-        parser.add_option("-m", dest="move_delay",
-                          help="delay between move in ms", type="int", 
-                          metavar="MS")
-        parser.add_option("-s", dest="start_delay", 
-                          help="delay at start of new game in ms", type="int", 
-                          metavar="MS")
-        parser.add_option("-e", dest="end_delay",
-                          help="delay at end of a finished game in ms", 
-                          type="int", metavar="MS")
-        parser.add_option("-a", dest="noannotations", action="store_true", 
+        parser.add_option("-m", dest="move_delay", metavar="MS", type="int",
+                          default=self['move_delay'], 
+                          help="delay between move in ms")
+        parser.add_option("-s", dest="start_delay", metavar="MS", type="int",
+                          default=self['start_delay'],
+                          help="delay at start of new game in ms")
+        parser.add_option("-e", dest="end_delay", metavar="MS", type="int",
+                          default=self['end_delay'],  
+                          help="delay at end of a finished game in ms")
+        parser.add_option("-a", dest="annotations", action="store_const", 
+                          const=0, default=self['annotations'], 
                           help="disable annotations")
-        parser.add_option("-k", dest="nomarkup", action="store_true", 
-                          help="disable markup")
+        parser.add_option("-k", dest="markup", action="store_const", const=0, 
+                          default=self['markup'], help="disable markup")
         parser.add_option("-f", dest="fullscreen", action="store_true",
-                          help="fullscreen mode")
-        parser.add_option("--kgs", action="store_true", 
-                          help="use games from kgs.fuseki.info")
-        parser.add_option("--gokifu", action="store_true", 
-                          help="use games from gokifu.com")
-        parser.add_option("--eidogo", action="store_true", 
-                          help="use games from eidogo.com")
-        parser.add_option("--file", action="store_true", 
-                          help="use games from local files")
-        parser.add_option("-c", dest="config", action="store_true",
+                          default=False, help="fullscreen mode")
+        parser.add_option("--kgs", action="append_const", dest="sources",
+                          const="kgs", help="use games from kgs.fuseki.info")
+        parser.add_option("--gokifu", action="append_const", dest="sources",
+                          const="gokifu", help="use games from gokifu.com")
+        parser.add_option("--eidogo", action="append_const", dest="sources",
+                          const="eidogo", help="use games from eidogo.com")
+        parser.add_option("--file", action="append_const", dest="sources",
+                          const="file", help="use games from local files")
+        parser.add_option("-c", dest="mode", action="store_const", const="c",
+                          default=self['mode'], 
                           help="open the configuration dialog")
         parser.add_option("--dark", dest="dark", action="store_true",
-                          help="make the board dark")
+                          default=False, help="make the board dark")
         options, args = parser.parse_args()
-        if options.kgs or options.gokifu or options.eidogo or options.file:
-            self['sources'] = []
-            if options.file:
-                self['sources'].append('file')
-            if options.kgs:
-                self['sources'].append('kgs')
-            if options.gokifu:
-                self['sources'].append('gokifu')
-            if options.eidogo:
-                self['sources'].append('eidogo')    
-        self['move_delay'] = options.move_delay or self['move_delay']
-        self['start_delay'] = options.start_delay or self['start_delay']
-        self['end_delay'] = options.end_delay or self['end_delay']
-        self['sgf_folder'] = options.sgf_folder or self['sgf_folder']
-        if options.noannotations:
-            self['annotations'] = 0
-        if options.nomarkup:
-            self['markup'] = 0
-        if options.config:
-            self['mode'] = 'c'
-        self['dark'] = options.dark
-        self['fullscreen'] = options.fullscreen
+        if options.sources is None:
+            options.sources = self['sources']
+        self.update(vars(options))
 
 class SSConfigWindow(gtk.Window):
     def __init__(self, conf):

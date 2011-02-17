@@ -19,6 +19,8 @@
 #
 # Todo:
 #   Display Pass moves?
+#   Display Error messages?
+#   Restructure code to not be quite so hideous
 
 import gtk
 import pango
@@ -39,6 +41,8 @@ class AnnotationDisplay(gtk.VBox):
 
     base_size = 12
     game_info_spacing = 7
+    ratio = 0.3
+    margin = 0.02
 
     def __init__(self):
         super(AnnotationDisplay, self).__init__()
@@ -46,7 +50,7 @@ class AnnotationDisplay(gtk.VBox):
         self.annotations = {}
         self.labels = []
         self.font_desc = pango.FontDescription()
-        self.font_desc.set_size(self.base_size*pango.SCALE)
+        self.font_desc.set_size(self.base_size * pango.SCALE)
         self.set_spacing(self.base_size)
         self.pack_game_info_display()
         self.pack_hr()

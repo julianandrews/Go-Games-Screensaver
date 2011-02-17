@@ -34,8 +34,6 @@ class GobanHBox(gtk.HBox):
     __gsignals__ = {'size-allocate': 'override'}
 
     margin_ratio = 0.07
-    abox_ratio = 0.3
-    abox_margin = 0.02
     new_game_wait = 100
     max_timeout_count = 40
     
@@ -44,7 +42,7 @@ class GobanHBox(gtk.HBox):
         self.sgf_source = sgfsources.MultiSource(conf['sources'], 
                                                  conf['sgf_folder'])
         self.goban_display = goban_display.GobanDisplay(conf['markup'], 
-                                                        conf.get('dark', False))
+                                                        conf['dark'])
         self.pack_start(self.goban_display)
         self.abox = annotation_display.AnnotationDisplay()
         if conf['annotations']:
@@ -53,20 +51,20 @@ class GobanHBox(gtk.HBox):
         self.new_game()
         
     def do_size_allocate(self, alloc):
-        margin = alloc.height * self.margin_ratio
-        width_ratio = 1.0 + (self.abox_ratio if conf['annotations'] else 0)
-        if (alloc.width + 2 * margin)/ (alloc.height + 2 * margin) > width_ratio:
-            height = int(alloc.height - 2 * margin)
+        m = alloc.height * self.margin_ratio
+        width_ratio = 1.0 + (self.abox.ratio if conf['annotations'] else 0)
+        if (alloc.width + 2 * m)/ (alloc.height + 2 * m) > width_ratio:
+            height = int(alloc.height - 2 * m)
         else:
-            height = int((alloc.width - 2 * margin) / width_ratio)
+            height = int((alloc.width - 2 * m) / width_ratio)
         width = int(height * width_ratio)
         x = alloc.x + (alloc.width - width)/2
         y = alloc.y + (alloc.height - height)/2
         self.goban_display.size_allocate((x, y, height, height))
-        self.abox.size_allocate((int(x + height * (1.0 + self.abox_margin)), 
-                                 int(y + height * self.abox_margin), 
-                                 int(width - height * (1.0 - self.abox_margin)), 
-                                 int(height * (1.0 - 2 * self.abox_margin))))        
+        self.abox.size_allocate((int(x + height * (1.0 + self.abox.margin)), 
+                                 int(y + height * self.abox.margin), 
+                                 int(width - height * (1.0 - self.abox.margin)), 
+                                 int(height * (1.0 - 2 * self.abox.margin))))        
     def new_game(self):
         game_node = self.sgf_source.get_random_game()
         if game_node is None:

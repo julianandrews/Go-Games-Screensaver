@@ -189,7 +189,7 @@ class GobanDisplay(gtk.DrawingArea):
                                (self.board_size - 1.0) * self.line_spacing)
         w = self.line_spacing * (self.board_size - 1) * self.scale
         m = self.board_margin * self.scale
-        bw = int(w + 2 * m)
+        bw = self.allocation.width
         self.clean_board_surf = cairo.ImageSurface(0, bw, bw)
         cr = cairo.Context(self.clean_board_surf)
         cr.set_source_rgb(*self.board_color)

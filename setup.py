@@ -105,3 +105,4 @@ elif platform.system() == "Linux":
              "--type string "
              "--set /desktop/gnome/thumbnailers/application@x-go-sgf/"
              "command \"/usr/bin/gogames-sgf-thumbnailer -s%s %u %o\"")
+    os.popen("gconftool-2 --shutdown")

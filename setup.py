@@ -33,8 +33,8 @@ class LinuxDistribution(Distribution):
 class WindowsDistribution(Distribution):
     def __init__(self, *args):
         Distribution.__init__(self, *args)
-        self.windows = [{'script': 'gogames-screensaver.py',
-                         'icon_resources': [(1,'misc/icon.ico')]}]
+        self.windows = [{'script': 'gogames-screensaver',
+                         'icon_resources': [(1,'icons/icon.ico')]}]
         self.options = {
             'py2exe': {
             'optimize': 2,

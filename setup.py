@@ -55,6 +55,8 @@ if platform.system() == "Windows":
     my_distclass = WindowsDistribution
 elif platform.system() == "Linux":
     my_distclass = LinuxDistribution
+    
+modules = [os.path.splitext(fn)[0] for fn in glob.glob("lib/*.py")]
 
 setup(name="Go Games",
       version="0.10",
@@ -62,9 +64,7 @@ setup(name="Go Games",
       description = "A screensaver which displays go games from sgf files.",
       author = "Julian Andrews",
       author_email = "jandrews271@gmail.com",
-      packages = ["gogames_screensaver"],
-      package_dir = {"lib": "gogames_screensaver"},
-      py_modules = glob.glob("*.py"),
+      py_modules = modules, 
       keywords = ["Go", "Weiqi", "Baduk", "Screensaver", "Gnome"],
       classifiers = ["Development Status :: 4 - Beta",
                      "Environment :: X11 Applications :: Gnome",
@@ -77,7 +77,7 @@ setup(name="Go Games",
                      "Topic :: Games/Entertainment :: Board Games"],
       data_files = [("images", glob.glob("data/images/*.svg")),
                     ("sgf", glob.glob("data/sgf/*.sgf"))],
-      distclass=my_distclass)
+      distclass = my_distclass)
       
 if platform.system() == "Windows":
     if os.access("dist/Go Games.scr", os.F_OK):

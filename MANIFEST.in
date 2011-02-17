@@ -1,1 +1,3 @@
-include *.txt gogames-screensaver.desktop
+include *.txt gogames-screensaver.desktop icons/*
+recursive-include data *
+

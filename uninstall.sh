@@ -19,10 +19,12 @@
 #    along with Go Games Screensaver.  If not, see 
 #    <http://www.gnu.org/licenses/>.
 
-rm `pkg-config --variable=themesdir gnome-screensaver`/gogames-screensaver.desktop;
+ss_dir=$(pkg-config --variable=themesdir gnome-screensaver)
+rm $ss_dir/gogames-screensaver.desktop;
 rm -r /usr/share/gogames-screensaver;
 rm /usr/bin/gogames-screensaver;
 rm /usr/bin/gogames-sgf-thumbnailer;
+unlink /usr/lib/gnome-screensaver/gnome-screensaver/gogames-screensaver
 x=`gconftool-2 --get /desktop/gnome/thumbnailers/application@x-go-sgf/command`;
 if [ "$x"=="/usr/bin/gogames-sgf-thumbnailer -s%s %u %o" ]; then 
     gconftool-2 --direct \

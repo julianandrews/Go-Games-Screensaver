@@ -89,20 +89,5 @@ if platform.system() == "Windows":
         os.remove("dist/Go Games.scr")
     os.rename("dist/gogames-screensaver.exe", "dist/Go Games.scr")
 elif platform.system() == "Linux":
-    ss_dir = os.popen("pkg-config --variable=themesdir gnome-screensaver").\
-                                                                read().strip()
-    with open("gogames-screensaver.desktop") as f:
-        data = f.read()
-    with open(os.path.join(ss_dir, "gogames-screensaver.desktop"), "w") as f:
-        f.write(data)
-    os.popen("gconftool-2 --direct "
-             "--config-source xml:readwrite:/etc/gconf/gconf.xml.defaults "
-             "--type bool "
-             "--set /desktop/gnome/thumbnailers/application@x-go-sgf/"
-             "enable true")
-    os.popen("gconftool-2 --direct "
-             "--config-source xml:readwrite:/etc/gconf/gconf.xml.defaults "
-             "--type string "
-             "--set /desktop/gnome/thumbnailers/application@x-go-sgf/"
-             "command \"/usr/bin/gogames-sgf-thumbnailer -s%s %u %o\"")
-    os.popen("gconftool-2 --shutdown")
+    os.popen("./post-install.sh")
+    

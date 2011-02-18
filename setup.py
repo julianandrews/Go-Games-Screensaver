@@ -18,46 +18,36 @@
 #    <http://www.gnu.org/licenses/>.
 
 from distutils.core import setup, Distribution
+import distutils.command.install
 import glob
 import os
 import platform
 import sys
 
-class LinuxDistribution(Distribution):
+class LinuxInstall(distutils.command.install.install):
+    def run(self):
+        distutils.command.install.install.run(self)
+        os.popen("./post-install.sh")
 
+class LinuxGogamesDistribution(Distribution):
     def __init__(self, *args):
         Distribution.__init__(self, *args)
         self.scripts = ["gogames-screensaver", "gogames-sgf-thumbnailer"]
 
-class WindowsDistribution(Distribution):
+class WindowsGogamesDistribution(Distribution):
     def __init__(self, *args):
         Distribution.__init__(self, *args)
         self.windows = [{'script': 'gogames-screensaver',
                          'icon_resources': [(1,'icons/icon.ico')]}]
-        self.options = {
-            'py2exe': {
-            'optimize': 2,
-            'includes': 'cairo, pango, pangocairo, atk, gobject, gio',
-            'dll_excludes': ["iconv.dll","intl.dll","libatk-1.0-0.dll",
-                             "libgdk_pixbuf-2.0-0.dll","libcairo-2.dll",
-                             "libgdk-win32-2.0-0.dll","libglib-2.0-0.dll",
-                             "libgmodule-2.0-0.dll","libgobject-2.0-0.dll",
-                             "libgthread-2.0-0.dll","libgtk-win32-2.0-0.dll",
-                             "libpango-1.0-0.dll","libpangowin32-1.0-0.dll",
-                             "libfontconfig-1.dll", "libgio-2.0-0.dll", 
-                             "libpangocairo-1.0-0.dll", "libpng14-14.dll",
-                             "zlib1.dll", "w9xpopen.exe"]}}
         self.zipfile = None
                        
 if platform.system() == "Windows":
     import py2exe
-    my_distclass = WindowsDistribution
+    my_distclass = WindowsGogamesDistribution
+    my_install = distutils.command.install.install
 elif platform.system() == "Linux":
-    my_distclass = LinuxDistribution
-    base_dir = "/usr/share/gogames-screensaver"
-    sys.argv.append("--install-lib=%s" % base_dir)
-    sys.argv.append("--install-data=%s/data" % base_dir)
-    sys.argv.append("--install-scripts=/usr/bin")
+    my_distclass = LinuxGogamesDistribution
+    my_install = LinuxInstall
     
 modules = [os.path.splitext(fn)[0] for fn in glob.glob("lib/*.py")]
 
@@ -82,12 +72,11 @@ setup(name="Go Games",
                     ("sgf", glob.glob("data/sgf/*.sgf"))],
       requires = ["cairo", "gio", "glib", "gtk", "pango", "rsvg", 
                   "simpleparse"],
-      distclass = my_distclass)
+      distclass = my_distclass,
+      cmdclass={'install': my_install})
       
 if platform.system() == "Windows":
     if os.access("dist/Go Games.scr", os.F_OK):
         os.remove("dist/Go Games.scr")
     os.rename("dist/gogames-screensaver.exe", "dist/Go Games.scr")
-elif platform.system() == "Linux":
-    os.popen("./post-install.sh")
-    
+

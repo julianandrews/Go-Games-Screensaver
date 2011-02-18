@@ -20,15 +20,13 @@
 import os
 import platform
 
+data_folder = os.path.join(os.path.split(os.path.dirname(__file__))[0], "data")
+
 if platform.system() == 'Windows':
     from scr_windows import get_mode, WinSSWindow as SSWindow
-    data_folder = "E:\\julian\\coding\\gogames-screensaver\\data"
     config_folder = data_folder #Stupid hack for now
 elif platform.system() == 'Linux':
     from scr_linux import GsThemeWindow as SSWindow
-    data_folder = os.path.join(os.path.split(os.path.dirname(__file__))[0], 
-                               "data")
-    print data_folder
     config_folder = os.path.join(os.getenv("HOME"), ".gogames-screensaver")
     def get_mode():
         return None, None

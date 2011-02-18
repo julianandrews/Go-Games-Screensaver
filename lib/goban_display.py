@@ -183,13 +183,12 @@ class GobanDisplay(gtk.DrawingArea):
             cr.set_source_rgba(0, 0, 0, 0.80)
             cr.paint()
         
-    def gen_board(self, size):
+    def gen_board(self, bw):
         """Sets self.clean_board_surf, self.board_cr, and self.scale"""
-        self.scale = size / (2.0 * self.board_margin + 
+        self.scale = bw / (2.0 * self.board_margin + 
                                (self.board_size - 1.0) * self.line_spacing)
         w = self.line_spacing * (self.board_size - 1) * self.scale
         m = self.board_margin * self.scale
-        bw = self.allocation.width
         self.clean_board_surf = cairo.ImageSurface(0, bw, bw)
         cr = cairo.Context(self.clean_board_surf)
         cr.set_source_rgb(*self.board_color)

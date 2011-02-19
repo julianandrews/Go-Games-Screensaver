@@ -21,6 +21,7 @@
 #   Support LB markup property
 #   Clean up VW property
 #   Optionally draw coordinates around board edge?
+#   Rework so that stones can actually be 11.2 in size?
 
 import cairo
 import gtk
@@ -50,7 +51,7 @@ class GobanDisplay(gtk.DrawingArea):
     SL_color = (0.2, 0.75, 0.2)
     board_margin = 14.1
     line_spacing = 22.0
-    stone_radius = 11.2
+    stone_radius = 11.0
     line_width = 1.0
     heavy_line_width = 2.0
     markup_line_width = 1.5
@@ -92,84 +93,91 @@ class GobanDisplay(gtk.DrawingArea):
         surf.write_to_png(filename)
 
     @staticmethod
-    def draw_MA(cr, offset, scale):
-        cr.move_to(offset[0] + scale/4, offset[1]+scale/4)
-        cr.rel_line_to(scale/2, scale/2)
-        cr.move_to(offset[0]+scale/4, offset[1]+3*scale/4)
-        cr.rel_line_to(scale/2, -scale/2)
+    def draw_MA(cr):
+        cr.move_to(0.25, 0.25)
+        cr.rel_line_to(0.5, 0.5)
+        cr.move_to(0.25, 0.75)
+        cr.rel_line_to(0.5, -0.5)
         cr.stroke()
 
     @staticmethod
-    def draw_CR(cr, offset, scale):
-        cr.move_to(offset[0] + 4*scale/5, offset[1] + scale/2)
-        cr.arc(offset[0] + scale/2, offset[1] + scale/2, scale*3/10, 0, 
-               2 * math.pi)
+    def draw_CR(cr):
+        cr.move_to(0.8, 0.5)
+        cr.arc(0.5, 0.5, 0.3, 0, 2 * math.pi)
         cr.stroke()
         
     @staticmethod
-    def draw_TR(cr, offset, scale):
-        a = scale
+    def draw_TR(cr):
         s = math.sqrt(3)
-        cr.move_to(offset[0] + scale / 2, offset[1] + scale / 5)
-        cr.line_to(offset[0] + (1 - 3 * s / 10) * scale / 2, 
-                   offset[1] + 13 * scale / 20)
-        cr.line_to(offset[0] + (1 + 3 * s / 10) * scale / 2, 
-                   offset[1] + 13 * scale / 20)
+        cr.move_to(0.5, 0.2)
+        cr.line_to(0.5 - 0.15 * s, 0.65)
+        cr.line_to(0.5 + 0.15 * s, 0.65)
         cr.close_path()
         cr.stroke()
         
     @staticmethod
-    def draw_SQ(cr, offset, scale):
-        cr.rectangle(offset[0]+scale/4+0.5, offset[1]+scale/4+0.5, 
-                     scale/2-1, scale/2-1)
+    def draw_SQ(cr):
+        cr.rectangle(0.25, 0.25, 0.5, 0.5)
         cr.stroke()
     
     @classmethod
-    def draw_SL(cls, cr, offset, scale):
+    def draw_SL(cls, cr):
         cr.set_source_rgb(*cls.SL_color)
-        cls.draw_MA(cr, offset, scale)
+        cls.draw_MA(cr)
         
     @classmethod
-    def draw_TB(cls, cr, offset, scale):
-        cls.draw_Tx(cr, offset, scale, 1)
+    def draw_TB(cls, cr):
+        cls.draw_Tx(cr, 1)
     
     @classmethod
-    def draw_TW(cls, cr, offset, scale):
-        cls.draw_Tx(cr, offset, scale, -1)
+    def draw_TW(cls, cr):
+        cls.draw_Tx(cr, -1)
         
     @classmethod
-    def draw_Tx(cls, cr, offset, scale, col):
+    def draw_Tx(cls, cr, col):
         svg = cls.stone_ims[col]
-        s = 0.5 * scale / svg.props.width
-        cr.translate(offset[0]+scale/4, offset[1]+scale/4)
+        s = 0.5 / svg.props.width
+        cr.save()
+        cr.translate(0.25, 0.25)
         cr.scale(s, s)
         svg.render_cairo(cr)
-        cr.identity_matrix()
+        cr.restore()
         
     @classmethod
-    def draw_DD(cls, cr, offset, scale):
+    def draw_DD(cls, cr):
         pass
         
     @staticmethod
-    def draw_Plus(cr, offset, scale):
-        cr.move_to(*offset)
-        cr.rel_move_to(scale/2, scale/4)
-        cr.rel_line_to(0, scale/2)
-        cr.move_to(*offset)
-        cr.rel_move_to(scale/4, scale/2)
-        cr.rel_line_to(scale/2, 0)
+    def draw_Plus(cr):
+        cr.move_to(0.5, 0.25)
+        cr.rel_line_to(0, 0.5)
+        cr.move_to(0, 0)
+        cr.rel_move_to(0.25, 0.5)
+        cr.rel_line_to(0.5, 0)
         cr.stroke()
     
     @classmethod
-    def draw_NotShowing(cls, cr, offset, scale):
+    def draw_NotShowing(cls, cr):
         cr.set_source_rgba(*(list(cls.bg_color) + [0.8]))
-        cr.rectangle(offset[0], offset[1], scale+0.5, scale+0.5)
+        cr.rectangle(0, 0, 1, 1)
         cr.fill()
 
-    def draw_EmptyPoint(self, cr, offset, scale):
+    def draw_EmptyPoint(self, cr):
+        cr.save()
+        cr.rectangle(0, 0, 1, 1)
+        cr.identity_matrix()
         cr.set_source_surface(self.clean_board_surf)
-        cr.rectangle(offset[0]-2, offset[1]-2, scale + 4, scale + 4)
         cr.fill()
+        cr.restore()
+
+    def draw_BStone(self, cr):
+        self.draw_Stone(cr, 1)
+        
+    def draw_WStone(self, cr):
+        self.draw_Stone(cr, -1)
+
+    def draw_Stone(self, cr, col):
+        pass
     
     def draw(self, cr):
         if not self.game_node is None:
@@ -186,8 +194,8 @@ class GobanDisplay(gtk.DrawingArea):
         """Sets self.clean_board_surf, self.board_cr, and self.scale"""
         self.scale = bw / (2.0 * self.board_margin + 
                                (self.board_size - 1.0) * self.line_spacing)
-        w = self.line_spacing * (self.board_size - 1) * self.scale
-        m = self.board_margin * self.scale
+        w = int(round(self.line_spacing * self.scale)) * (self.board_size - 1)
+        m = self.point_map((1, 1))[0]
         self.clean_board_surf = cairo.ImageSurface(0, bw, bw)
         cr = cairo.Context(self.clean_board_surf)
         cr.set_source_rgb(*self.board_color)
@@ -220,49 +228,28 @@ class GobanDisplay(gtk.DrawingArea):
         
     def draw_stones(self):
         cr = self.board_cr
-        new_stones = []
-        removed_points = tuple(p for (p, c) in self.old_stones.iteritems() 
-                               if not self.game_node.goban.get(p) == c)
-        redraw_points = []
-        for point in removed_points:
-            if not self.old_stones.get(point) == None:
-                del self.old_stones[point]
-            for i in (-1, 0, 1):
-                for j in (-1, 0, 1):
-                    if i == j == 0:
-                        continue
-                    p = (point[0] + i, point[1] + j)
-                    if not self.old_stones.get(p) == None:
-                        redraw_points.append(p)
-                        del self.old_stones[p]
         for point, color in self.game_node.goban.iteritems():
-            if color == 0:
-                continue
-            if not self.old_stones.get(point, 0) == color:
-                new_stones.append((point, color))
-                self.old_stones[point] = color
-        for point in removed_points:
-            self.draw_markup_at_point(self.board_cr, 'EmptyPoint', 0, point)
-        for point, color in new_stones:
             alpha = 0.5 if any(point in self.game_node.markup.get(prop_id, ()) 
                                for prop_id in ("TB", "TW", "DD")) else 1.0
+            if self.old_stones.get(point) == (color, alpha):
+                continue
+            if not self.old_stones.get(point) is None:
+                self.draw_at_point(self.board_cr, 'EmptyPoint', 0, point)
+            self.old_stones[point] = (color, alpha)
+            if color == 0:
+                continue
+            self.old_stones[point] = (color, alpha)
             svg = self.stone_ims[color]
-            s = 2.0 * self.stone_radius * self.scale / svg.props.width
-            cr.translate(*map(lambda x: x - int(self.stone_radius * 
-                                           self.scale), self.point_map(point)))
+            s = round(2.0 * self.stone_radius * self.scale) / svg.props.width
+            cr.translate(*(x - int(round(self.line_spacing * self.scale)) / 2 
+                           for x in self.point_map(point)))
             cr.scale(s, s)
-            if point in redraw_points:
-                cr.push_group()
-                svg.render_cairo(cr)
-                pat = cr.pop_group()
-                cr.set_source_surface(self.clean_board_surf)
-                cr.mask(pat)
             cr.push_group()
             svg.render_cairo(cr)
             cr.pop_group_to_source()
             cr.paint_with_alpha(alpha)
             cr.identity_matrix()
-            
+
     def draw_markup(self, cr):
         for prop_id, prop_vals in self.game_node.markup.iteritems():
             if prop_id in ('LB', 'VW'):
@@ -273,24 +260,26 @@ class GobanDisplay(gtk.DrawingArea):
             else:
                 for point in prop_vals:
                     color = self.game_node.goban[point]
-                    self.draw_markup_at_point(cr, prop_id, color, point)
+                    self.draw_at_point(cr, prop_id, color, point)
         last_stone = self.game_node.goban.last_stone
         if not last_stone == None:
             color = self.game_node.goban[last_stone]
-            self.draw_markup_at_point(cr, "Plus", color, last_stone)
+            self.draw_at_point(cr, "Plus", color, last_stone)
         if not self.game_node.markup.get('VW') == None:
             for point in self.game_node.goban:
                 if not point in self.game_node.markup['VW']:
-                    self.draw_markup_at_point(cr, 'NotShowing', 0, point)
+                    self.draw_at_point(cr, 'NotShowing', 0, point)
                                
-    def draw_markup_at_point(self, cr, prop_id, stone_color, point):
-        cr.set_line_width(int(self.markup_line_width * self.scale))
+    def draw_at_point(self, cr, prop_id, stone_color, point):
         cr.set_source_rgb(*self.markup_colors[stone_color])
-        offset = map(lambda x: x - self.stone_radius * self.scale, 
-                     self.point_map(point))
-        cr.move_to(0, 0)
-        eval("self.draw_%s" % prop_id)(cr, offset, 
-                                       self.scale * self.line_spacing)
+        cr.save()
+        cr.translate(*(x - int(round(self.line_spacing * self.scale)) / 2 
+                       for x in self.point_map(point)))
+        s = self.scale * self.line_spacing
+        cr.scale(s, s)
+        cr.set_line_width(self.markup_line_width/self.line_spacing)
+        eval("self.draw_%s" % prop_id)(cr)
+        cr.restore()
     
     def draw_line(self, cr, (a, b), prop_id):
         col = self.markup_line_cols[prop_id]
@@ -317,6 +306,9 @@ class GobanDisplay(gtk.DrawingArea):
             cr.identity_matrix()
 
     def point_map(self, point):
-        return map(lambda x: int(self.scale * (self.board_margin + 
-                                 self.line_spacing * (x - 1))), point)
+        bw = int(self.scale * (2 * self.board_margin + (self.board_size - 1) * 
+                               self.line_spacing))
+        l = int(round(self.scale * self.line_spacing))
+        m = (bw - (self.board_size - 1) * l) / 2
+        return [m + l * (x - 1) for x in point]
 

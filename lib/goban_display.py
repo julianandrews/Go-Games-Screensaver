@@ -168,14 +168,14 @@ class GobanDisplay(gtk.DrawingArea):
         cr.fill()
 
     def draw_EmptyPoint(self, cr, offset, scale):
-        cr.set_source(cairo.SurfacePattern(self.clean_board_surf))
+        cr.set_source_surface(self.clean_board_surf)
         cr.rectangle(offset[0]-2, offset[1]-2, scale + 4, scale + 4)
         cr.fill()
     
     def draw(self, cr):
         if not self.game_node is None:
             self.draw_stones()
-        cr.set_source(cairo.SurfacePattern(self.board_cr.get_target()))
+        cr.set_source_surface(self.board_cr.get_target())
         cr.paint()
         if self.should_draw_markup and not self.game_node is None:
             self.draw_markup(cr)
@@ -215,7 +215,7 @@ class GobanDisplay(gtk.DrawingArea):
             cr.fill()
         board_surf = cairo.ImageSurface(0, bw, bw)
         self.board_cr = cairo.Context(board_surf)
-        self.board_cr.set_source(cairo.SurfacePattern(self.clean_board_surf))
+        self.board_cr.set_source_surface(self.clean_board_surf)
         self.board_cr.paint()
         self.old_stones = {}
         
@@ -256,7 +256,7 @@ class GobanDisplay(gtk.DrawingArea):
                 cr.push_group()
                 svg.render_cairo(cr)
                 pat = cr.pop_group()
-                cr.set_source(cairo.SurfacePattern(self.clean_board_surf))
+                cr.set_source_surface(self.clean_board_surf)
                 cr.mask(pat)
             cr.push_group()
             svg.render_cairo(cr)

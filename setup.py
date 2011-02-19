@@ -52,7 +52,7 @@ elif platform.system() == "Linux":
 modules = [os.path.splitext(fn)[0] for fn in glob.glob("lib/*.py")]
 
 setup(name="Go Games",
-      version="0.10",
+      version="0.11",
       url="https://github.com/JulianAndrews/Go-Games-Screensaver",
       description = "A screensaver which displays go games from sgf files.",
       author = "Julian Andrews",

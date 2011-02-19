@@ -86,8 +86,7 @@ class GobanDisplay(gtk.DrawingArea):
         if not draw_size == size:
             new_surf = cairo.ImageSurface(0, size, size)
             cr = cairo.Context(new_surf)
-            pat = cairo.SurfacePattern(surf)
-            cr.set_source(pat)
+            cr.set_source_surface(surf)
             cr.paint()
             surf = new_surf
         surf.write_to_png(filename)

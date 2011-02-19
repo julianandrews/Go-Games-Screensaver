@@ -21,7 +21,6 @@
 #   Support LB markup property
 #   Clean up VW property
 #   Optionally draw coordinates around board edge?
-#   Rework so that stones can actually be 11.2 in size?
 
 import cairo
 import gtk
@@ -51,7 +50,7 @@ class GobanDisplay(gtk.DrawingArea):
     SL_color = (0.2, 0.75, 0.2)
     board_margin = 14.1
     line_spacing = 22.0
-    stone_radius = 11.0
+    stone_radius = 11.2
     line_width = 1.0
     heavy_line_width = 2.0
     markup_line_width = 1.5
@@ -91,6 +90,17 @@ class GobanDisplay(gtk.DrawingArea):
             cr.paint()
             surf = new_surf
         surf.write_to_png(filename)
+        
+    def draw(self, cr):
+        if not self.game_node is None:
+            self.draw_stones()
+        cr.set_source_surface(self.board_cr.get_target())
+        cr.paint()
+        if self.should_draw_markup and not self.game_node is None:
+            self.draw_markup(cr)
+        if self.darken:
+            cr.set_source_rgba(0, 0, 0, 0.80)
+            cr.paint()
 
     @staticmethod
     def draw_MA(cr):
@@ -164,31 +174,39 @@ class GobanDisplay(gtk.DrawingArea):
 
     def draw_EmptyPoint(self, cr):
         cr.save()
+        cr.translate(-0.1, -0.1)
+        cr.scale(1.2, 1.2)
         cr.rectangle(0, 0, 1, 1)
         cr.identity_matrix()
         cr.set_source_surface(self.clean_board_surf)
         cr.fill()
         cr.restore()
 
+    def draw_BStoneT(self, cr):
+        self.draw_Stone(cr, 1, 0.5)
+        
+    def draw_WStoneT(self, cr):
+        self.draw_Stone(cr, -1, 0.5)
+
     def draw_BStone(self, cr):
-        self.draw_Stone(cr, 1)
+        self.draw_Stone(cr, 1, 1.0)
         
     def draw_WStone(self, cr):
-        self.draw_Stone(cr, -1)
+        self.draw_Stone(cr, -1, 1.0)
 
-    def draw_Stone(self, cr, col):
-        pass
-    
-    def draw(self, cr):
-        if not self.game_node is None:
-            self.draw_stones()
-        cr.set_source_surface(self.board_cr.get_target())
-        cr.paint()
-        if self.should_draw_markup and not self.game_node is None:
-            self.draw_markup(cr)
-        if self.darken:
-            cr.set_source_rgba(0, 0, 0, 0.80)
-            cr.paint()
+    def draw_Stone(self, cr, color, alpha):
+        svg = self.stone_ims[color]
+        cr.push_group()
+        s = 1.0/svg.props.width
+        cr.scale(s, s)
+        cr.push_group()
+        svg.render_cairo(cr)
+        pat = cr.pop_group()
+        cr.set_source_surface(self.clean_board_surf)
+        cr.mask(pat)
+        svg.render_cairo(cr)
+        cr.pop_group_to_source()
+        cr.paint_with_alpha(alpha)
         
     def gen_board(self, bw):
         """Sets self.clean_board_surf, self.board_cr, and self.scale"""
@@ -227,28 +245,37 @@ class GobanDisplay(gtk.DrawingArea):
         self.old_stones = {}
         
     def draw_stones(self):
-        cr = self.board_cr
+        alphas = {}
+        for prop_id in ("TB", "TW", "DD"):
+            for point in self.game_node.goban.get(prop_id, ()):
+                alphas[point] = True
+        changed_points = []
         for point, color in self.game_node.goban.iteritems():
-            alpha = 0.5 if any(point in self.game_node.markup.get(prop_id, ()) 
-                               for prop_id in ("TB", "TW", "DD")) else 1.0
-            if self.old_stones.get(point) == (color, alpha):
-                continue
-            if not self.old_stones.get(point) is None:
-                self.draw_at_point(self.board_cr, 'EmptyPoint', 0, point)
+            if self.old_stones.get(point) is None:
+                if not color == 0:
+                    changed_points.append(point)
+            elif not self.old_stones.get(point) == (color, alphas.get(point, 
+                                                                      False)):
+                changed_points.append(point)
+        touched_points = {}
+        for point in changed_points:
+            self.draw_at_point(self.board_cr, 'EmptyPoint', 0, point)
+            if self.game_node.goban[point] == 0:
+                del self.old_stones[point]
+            else:
+                touched_points[point] = True
+            for i in (-1, 0, 1):
+                for j in (-1, 0, 1):
+                    p = (point[0] + i, point[1] + j)
+                    if not self.game_node.goban.get(p, 0) == 0:
+                        touched_points[p] = True
+        for point in touched_points:
+            color = self.game_node.goban[point]
+            alpha = alphas.get(point, False)
             self.old_stones[point] = (color, alpha)
-            if color == 0:
-                continue
-            self.old_stones[point] = (color, alpha)
-            svg = self.stone_ims[color]
-            s = round(2.0 * self.stone_radius * self.scale) / svg.props.width
-            cr.translate(*(x - int(round(self.line_spacing * self.scale)) / 2 
-                           for x in self.point_map(point)))
-            cr.scale(s, s)
-            cr.push_group()
-            svg.render_cairo(cr)
-            cr.pop_group_to_source()
-            cr.paint_with_alpha(alpha)
-            cr.identity_matrix()
+            prop_id = "%sStone%s" % ("B" if color == 1 else "W", 
+                                     "T" if alpha else "")
+            self.draw_at_point(self.board_cr, prop_id, 0, point)
 
     def draw_markup(self, cr):
         for prop_id, prop_vals in self.game_node.markup.iteritems():
@@ -271,12 +298,13 @@ class GobanDisplay(gtk.DrawingArea):
                     self.draw_at_point(cr, 'NotShowing', 0, point)
                                
     def draw_at_point(self, cr, prop_id, stone_color, point):
-        cr.set_source_rgb(*self.markup_colors[stone_color])
         cr.save()
-        cr.translate(*(x - int(round(self.line_spacing * self.scale)) / 2 
-                       for x in self.point_map(point)))
-        s = self.scale * self.line_spacing
+        cr.identity_matrix()
+        cr.set_source_rgb(*self.markup_colors[stone_color])
+        s = int(round(self.scale * self.line_spacing))
+        cr.translate(*self.point_map(point))
         cr.scale(s, s)
+        cr.translate(-0.5, -0.5)
         cr.set_line_width(self.markup_line_width/self.line_spacing)
         eval("self.draw_%s" % prop_id)(cr)
         cr.restore()

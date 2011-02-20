@@ -50,7 +50,6 @@ def create_thumbnail():
     gfile = gio.File(uri)
     try:
         data = gfile.load_contents()[0]
-        print data
         game_node = gogame.game_nodes_from_data(data)[0]
         for i in range(move_num):
             if game_node.child_nodes == []:

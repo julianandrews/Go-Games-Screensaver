@@ -19,7 +19,6 @@
 #
 # Todo
 #   Support LB markup property
-#   Clean up VW property
 #   Optionally draw coordinates around board edge?
 
 import cairo
@@ -32,9 +31,9 @@ from os_wrapper import data_folder
 
 class GobanDisplay(gtk.DrawingArea):
     __gsignals__ = {"expose_event": "override"}
-    stone_ims = {-1: rsvg.Handle(os.path.join(data_folder, "images", 
-                                              "white_stone.svg")),
-                 1: rsvg.Handle(os.path.join(data_folder, "images", 
+    stone_svgs = {-1: rsvg.Handle(os.path.join(data_folder, "images", 
+                                               "white_stone.svg")),
+                  1: rsvg.Handle(os.path.join(data_folder, "images", 
                                              "black_stone.svg"))}
     hoshi_lists = {9: ((3,3), (3,7), (7,3), (7,7)),
                    13: ((4,4), (4,10), (7,7), (10,4), (10,10)),
@@ -50,7 +49,6 @@ class GobanDisplay(gtk.DrawingArea):
     SL_color = (0.2, 0.75, 0.2)
     board_margin = 14.1
     line_spacing = 22.0
-    stone_radius = 11.2
     line_width = 1.0
     heavy_line_width = 2.0
     markup_line_width = 1.5
@@ -145,7 +143,7 @@ class GobanDisplay(gtk.DrawingArea):
         
     @classmethod
     def draw_Tx(cls, cr, col):
-        svg = cls.stone_ims[col]
+        svg = cls.stone_svgs[col]
         s = 0.5 / svg.props.width
         cr.save()
         cr.translate(0.25, 0.25)
@@ -174,13 +172,12 @@ class GobanDisplay(gtk.DrawingArea):
 
     def draw_EmptyPoint(self, cr):
         cr.save()
-        cr.translate(-0.1, -0.1)
-        cr.scale(1.2, 1.2)
         cr.rectangle(0, 0, 1, 1)
         cr.identity_matrix()
         cr.set_source_surface(self.clean_board_surf)
         cr.fill()
         cr.restore()
+        return
 
     def draw_BStoneT(self, cr):
         self.draw_Stone(cr, 1, 0.5)
@@ -195,15 +192,11 @@ class GobanDisplay(gtk.DrawingArea):
         self.draw_Stone(cr, -1, 1.0)
 
     def draw_Stone(self, cr, color, alpha):
-        svg = self.stone_ims[color]
+        self.draw_EmptyPoint(cr)
+        svg = self.stone_svgs[color]
         cr.push_group()
         s = 1.0/svg.props.width
         cr.scale(s, s)
-        cr.push_group()
-        svg.render_cairo(cr)
-        pat = cr.pop_group()
-        cr.set_source_surface(self.clean_board_surf)
-        cr.mask(pat)
         svg.render_cairo(cr)
         cr.pop_group_to_source()
         cr.paint_with_alpha(alpha)
@@ -212,7 +205,7 @@ class GobanDisplay(gtk.DrawingArea):
         """Sets self.clean_board_surf, self.board_cr, and self.scale"""
         self.scale = bw / (2.0 * self.board_margin + 
                                (self.board_size - 1.0) * self.line_spacing)
-        w = int(round(self.line_spacing * self.scale)) * (self.board_size - 1)
+        w = self.real_line_spacing() * (self.board_size - 1)
         m = self.point_map((1, 1))[0]
         self.clean_board_surf = cairo.ImageSurface(0, bw, bw)
         cr = cairo.Context(self.clean_board_surf)
@@ -247,7 +240,7 @@ class GobanDisplay(gtk.DrawingArea):
     def draw_stones(self):
         alphas = {}
         for prop_id in ("TB", "TW", "DD"):
-            for point in self.game_node.goban.get(prop_id, ()):
+            for point in self.game_node.markup.get(prop_id, ()):
                 alphas[point] = True
         changed_points = []
         for point, color in self.game_node.goban.iteritems():
@@ -257,25 +250,18 @@ class GobanDisplay(gtk.DrawingArea):
             elif not self.old_stones.get(point) == (color, alphas.get(point, 
                                                                       False)):
                 changed_points.append(point)
-        touched_points = {}
+        print changed_points
         for point in changed_points:
-            self.draw_at_point(self.board_cr, 'EmptyPoint', 0, point)
-            if self.game_node.goban[point] == 0:
-                del self.old_stones[point]
-            else:
-                touched_points[point] = True
-            for i in (-1, 0, 1):
-                for j in (-1, 0, 1):
-                    p = (point[0] + i, point[1] + j)
-                    if not self.game_node.goban.get(p, 0) == 0:
-                        touched_points[p] = True
-        for point in touched_points:
             color = self.game_node.goban[point]
             alpha = alphas.get(point, False)
-            self.old_stones[point] = (color, alpha)
-            prop_id = "%sStone%s" % ("B" if color == 1 else "W", 
-                                     "T" if alpha else "")
-            self.draw_at_point(self.board_cr, prop_id, 0, point)
+            if color == 0:
+                self.draw_at_point(self.board_cr, 'EmptyPoint', 0, point)
+                del self.old_stones[point]
+            else:
+                self.old_stones[point] = (color, alpha)
+                prop_id = "%sStone%s" % ("B" if color == 1 else "W", 
+                                         "T" if alpha else "")
+                self.draw_at_point(self.board_cr, prop_id, 0, point)
 
     def draw_markup(self, cr):
         for prop_id, prop_vals in self.game_node.markup.iteritems():
@@ -301,13 +287,17 @@ class GobanDisplay(gtk.DrawingArea):
         cr.save()
         cr.identity_matrix()
         cr.set_source_rgb(*self.markup_colors[stone_color])
-        s = int(round(self.scale * self.line_spacing))
+        s = self.real_line_spacing()
         cr.translate(*self.point_map(point))
         cr.scale(s, s)
-        cr.translate(-0.5, -0.5)
+        cr.translate(*cr.device_to_user(*map(int, cr.user_to_device(-0.5, -0.5))))
         cr.set_line_width(self.markup_line_width/self.line_spacing)
         eval("self.draw_%s" % prop_id)(cr)
         cr.restore()
+        
+    def sharp_box(self, cr):
+        return list(cr.device_to_user(*map(int, cr.user_to_device(0, 0)))) + \
+               list(cr.device_to_user(*map(round, cr.user_to_device(1, 1))))
     
     def draw_line(self, cr, (a, b), prop_id):
         col = self.markup_line_cols[prop_id]
@@ -336,7 +326,10 @@ class GobanDisplay(gtk.DrawingArea):
     def point_map(self, point):
         bw = int(self.scale * (2 * self.board_margin + (self.board_size - 1) * 
                                self.line_spacing))
-        l = int(round(self.scale * self.line_spacing))
+        l = self.real_line_spacing()
         m = (bw - (self.board_size - 1) * l) / 2
         return [m + l * (x - 1) for x in point]
+        
+    def real_line_spacing(self):
+        return 2 * (int(round(self.scale * self.line_spacing))/2)
 

@@ -160,14 +160,14 @@ class GameNode(object):
                     val = float(val)
                 self.annotations[prop_id] = val
             elif p_type == 'markup':
+                old_markup = self.markup.get(prop_id)
                 if attr == 'inherit' and prop_vals == ['']:
-                    if not self.markup.get(prop_id) == None:
+                    if not old_markup is None:
                         del self.markup[prop_id]
                 elif value in ('l-point', 'el-point'):
-                    self.markup[prop_id] = _points_from_pointlist(prop_vals)
+                    self.markup[prop_id] = _points_from_pointlist(prop_vals) + (old_markup or [])
                 elif value in 'l-point:point':
-                    self.markup[prop_id] = [tuple(map(_point_from_string, 
-                                            s.split(':'))) for s in prop_vals]
+                    self.markup[prop_id] = [tuple(map(_point_from_string, s.split(':'))) for s in prop_vals] + (old_markup or [])
 
         for child in node.child_nodes:
             self.child_nodes.append(GameNode(child, Goban(self.goban), self))

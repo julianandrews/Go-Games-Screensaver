@@ -250,7 +250,6 @@ class GobanDisplay(gtk.DrawingArea):
             elif not self.old_stones.get(point) == (color, alphas.get(point, 
                                                                       False)):
                 changed_points.append(point)
-        print changed_points
         for point in changed_points:
             color = self.game_node.goban[point]
             alpha = alphas.get(point, False)

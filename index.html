@@ -31,14 +31,7 @@
 </head>
 
 <body>
-  <a href="http://github.com/JulianAndrews/Go-Games-Screensaver"><img style="position: absolute; top: 0; right: 0; border: 0;" src="http://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub" /></a>
-
   <div id="container">
-
-    <div class="download">
-      <a href="https://github.com/downloads/JulianAndrews/Go-Games-Screensaver/gogames-screensaver_0.14-1_amd64.deb">
-        <img border="0" width="90" src="http://github.com/images/modules/download/deb.png"></a>
-    </div>
 
     <h1><a href="http://github.com/JulianAndrews/Go-Games-Screensaver">Go-Games-Screensaver</a>
       <span class="small">by <a href="http://github.com/JulianAndrews">JulianAndrews</a></span></h1>
@@ -49,17 +42,14 @@
 
     <p>A gnome-screensaver theme to replay go games from sgf files.  Can use both local files and a variety of online sources.  Currently only tested under ubuntu 10.10 with python 2.6 (also runs under windows 7, but no installer exists, and the installation process is somewhat involved).</p><h2>Dependencies</h2>
 <p>python 2.6<br />
-modules:<br />
-    cairo<br />
-    gio<br />
-    glib<br />
-    gtk<br />
-    pango<br />
-    rsvg<br />
-    simpleparse</p>
+python-cairo<br />
+python-gnome2<br />
+python-rsvg
+python-simpleparse</p>
 <h2>Install</h2>
-<p>Ensure all needed python modules are installed - on ubuntu 10.10
-<pre>$ sudo apt-get install python-simpleparse</pre>
+<p>If you have a 64 bit version of Ubuntu, just download the .deb package and install it!  Incidentally, if anyone would like to volunteer to help with packaging for different systems, it would be most welcome - I am pretty ignorant of the whole packaging processes and only managed to produce this deb after much painful trial and error.</p>
+<p>Alternatively, ensure all needed python modules are installed - on ubuntu 10.10
+<pre>$ sudo apt-get install python-simpleparse python-cairo python-rsvg</pre>
 should be sufficient.  Then download the package and extract it and run
 <pre>$ sudo python setup.py install</pre> 
 in the source package folder</p>

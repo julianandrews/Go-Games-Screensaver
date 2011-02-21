@@ -24,7 +24,7 @@ rm $ss_dir/gogames-screensaver.desktop;
 rm -r /usr/share/gogames-screensaver;
 rm /usr/bin/gogames-screensaver;
 rm /usr/bin/gogames-sgf-thumbnailer;
-unlink /usr/lib/gnome-screensaver/gnome-screensaver/gogames-screensaver
+unlink $(pkg-config --variable=privlibexecdir gnome-screensaver)/gogames-screensaver
 x=`gconftool-2 --get /desktop/gnome/thumbnailers/application@x-go-sgf/command`;
 if [ "$x"=="/usr/bin/gogames-sgf-thumbnailer -s%s %u %o" ]; then 
     gconftool-2 --direct \

@@ -19,6 +19,8 @@
 
 from distutils.core import setup, Distribution
 import distutils.command.install
+import distutils.util
+import distutils.dir_util
 import glob
 import os
 import platform
@@ -27,7 +29,24 @@ import sys
 class LinuxInstall(distutils.command.install.install):
     def run(self):
         distutils.command.install.install.run(self)
-        os.popen("./post-install.sh")
+        ss_dir = os.popen("pkg-config --variable=themesdir "
+                          "gnome-screensaver").read().strip()
+        ss_exec_dir = os.popen("pkg-config --variable=privlibexecdir "
+                               "gnome-screensaver").read().strip()
+        gconf_dir = "/usr/share/gconf/defaults"
+        bin_file = "/usr/bin/gogames-screensaver"
+        if not self.root is None:
+            ss_dir = distutils.util.change_root(self.root, ss_dir)
+            ss_exec_dir = distutils.util.change_root(self.root, ss_exec_dir)
+            gconf_dir = distutils.util.change_root(self.root, gconf_dir)
+            bin_file = distutils.util.change_root(self.root, bin_file)
+        distutils.dir_util.mkpath(ss_dir)
+        self.copy_file("gogames-screensaver.desktop", ss_dir)
+        distutils.dir_util.mkpath(gconf_dir)
+        self.copy_file("10_gogames-screensaver", gconf_dir)
+        distutils.dir_util.mkpath(ss_exec_dir)
+        self.copy_file(bin_file, ss_exec_dir, link="sym")
+        os.popen("update-gconf-defaults")
 
 class LinuxGogamesDistribution(Distribution):
     def __init__(self, *args):
@@ -52,7 +71,7 @@ elif platform.system() == "Linux":
 modules = [os.path.splitext(fn)[0] for fn in glob.glob("lib/*.py")]
 
 setup(name="gogames-screensaver",
-      version="0.14",
+      version="0.15",
       url="http://github.com/JulianAndrews/Go-Games-Screensaver",
       description = "A screensaver which displays go games from sgf files.",
       author = "Julian Andrews",

@@ -1,0 +1,2 @@
+/desktop/gnome/thumbnailers/application@x-go-sgf/command    /usr/bin/gogames-sgf-thumbnailer -s%s %u %o
+/desktop/gnome/thumbnailers/application@x-go-sgf/enable     true

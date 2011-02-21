@@ -270,7 +270,7 @@ class GobanDisplay(gtk.DrawingArea):
             else:
                 for point in prop_vals:
                     color = self.game_node.goban[point]
-                    draw_func = eval("draw_%s" % prop_id)
+                    draw_func = eval("self.draw_%s" % prop_id)
                     self.draw_at_point(cr, draw_func, color, point)
         last_stone = self.game_node.goban.last_stone
         if not last_stone == None:

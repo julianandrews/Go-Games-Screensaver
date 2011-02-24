@@ -166,9 +166,8 @@ class GobanDisplay(gtk.DrawingArea):
         
     @classmethod
     def draw_hoshi(cls, cr):
-        cr.translate(-0.5, -0.5)
         cr.set_source_rgb(*cls.line_color)
-        cr.arc(0, 0, cls.hoshi_radius/cls.line_spacing, 0, 2 * math.pi)
+        cr.arc(0.5, 0.5, cls.hoshi_radius/cls.line_spacing, 0, 2 * math.pi)
         cr.fill()
     
     @classmethod

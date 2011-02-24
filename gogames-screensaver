@@ -22,14 +22,10 @@
 import sys
 
 try:
-    import lib
+    from lib.gogames_screensaver import start
 except ImportError:
     lib_folder = "/usr/share/gogames-screensaver"
     sys.path.insert(0, lib_folder)
-    import lib
-
-sys.modules['gogames_screensaver'] = sys.modules['lib']
-
-from gogames_screensaver.gogames_screensaver import start
+    from lib.gogames_screensaver import start
 
 start()

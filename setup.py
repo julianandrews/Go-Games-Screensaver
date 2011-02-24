@@ -17,16 +17,33 @@
 #    along with Go Games Screensaver.  If not, see 
 #    <http://www.gnu.org/licenses/>.
 
+import platform
+
+if platform.system() == "Windows":
+    import py2exe
+
 from distutils.core import setup, Distribution
 import distutils.command.install
 import distutils.util
 import distutils.dir_util
 import glob
 import os
-import platform
-import sys
 
 class LinuxInstall(distutils.command.install.install):
+
+    def finalize_options(self):
+        distutils.command.install.install.finalize_options(self)
+        root = self.root or '/'
+        self.install_lib = distutils.util.change_root(root, 
+                                              "/usr/share/gogames-screensaver")
+        self.install_platlib = distutils.util.change_root(root, 
+                                              "/usr/share/gogames-screensaver")
+        self.install_purelib =distutils.util.change_root(root, 
+                                              "/usr/share/gogames-screensaver")
+        self.install_scripts = distutils.util.change_root(root, "/usr/bin")
+        self.install_data = distutils.util.change_root(root, 
+                                         "/usr/share/gogames-screensaver/data")
+
     def run(self):
         distutils.command.install.install.run(self)
         ss_dir = os.popen("pkg-config --variable=themesdir "
@@ -45,8 +62,10 @@ class LinuxInstall(distutils.command.install.install):
         distutils.dir_util.mkpath(gconf_dir)
         self.copy_file("10_gogames-screensaver", gconf_dir)
         distutils.dir_util.mkpath(ss_exec_dir)
-        self.copy_file(bin_file, ss_exec_dir, link="sym")
-        os.popen("update-gconf-defaults")
+        source = os.path.relpath(bin_file, ss_exec_dir)
+        target = os.path.join(ss_exec_dir, os.path.basename(bin_file))
+        distutils.util.execute(os.symlink, (source, target))
+        distutils.util.execute(os.popen, ("update-gconf-defaults", ))
 
 class LinuxGogamesDistribution(Distribution):
     def __init__(self, *args):
@@ -56,19 +75,40 @@ class LinuxGogamesDistribution(Distribution):
 class WindowsGogamesDistribution(Distribution):
     def __init__(self, *args):
         Distribution.__init__(self, *args)
+        self.com_server = []
+        self.services = []
         self.windows = [{'script': 'gogames-screensaver',
                          'icon_resources': [(1,'icons/icon.ico')]}]
+        self.console = []
         self.zipfile = None
                        
+modules = [os.path.splitext(fn)[0] for fn in glob.glob("lib/*.py")]
+classifiers = ["Development Status :: 4 - Beta",
+               "Environment :: X11 Applications :: Gnome",
+               "License :: OSI Approved :: GNU General Public License "
+               "(GPL)",
+               "Natural Language :: English",
+               "Programming Language :: Python :: 2.6",
+               "Topic :: Desktop Environment :: Screen Savers",
+               "Topic :: Games/Entertainment :: Board Games"]
+
+
 if platform.system() == "Windows":
-    import py2exe
     my_distclass = WindowsGogamesDistribution
     my_install = distutils.command.install.install
+    try:
+        modules.remove("lib/scr_linux")
+    except ValueError:
+        pass
+    classifiers.append("Operating System :: Microsoft :: Windows")
 elif platform.system() == "Linux":
     my_distclass = LinuxGogamesDistribution
     my_install = LinuxInstall
-    
-modules = [os.path.splitext(fn)[0] for fn in glob.glob("lib/*.py")]
+    try:
+        modules.remove("lib/scr_windows")
+    except ValueError:
+        pass
+    classifiers.append("Operating System :: POSIX :: Linux")
 
 setup(name="gogames-screensaver",
       version="0.15",
@@ -78,24 +118,10 @@ setup(name="gogames-screensaver",
       author_email = "jandrews271@gmail.com",
       py_modules = modules, 
       keywords = ["Go", "Weiqi", "Baduk", "Screensaver", "Gnome"],
-      classifiers = ["Development Status :: 4 - Beta",
-                     "Environment :: X11 Applications :: Gnome",
-                     "License :: OSI Approved :: GNU General Public License "
-                     "(GPL)",
-                     "Natural Language :: English",
-                     "Operating System :: POSIX :: Linux",
-                     "Programming Language :: Python :: 2.6",
-                     "Topic :: Desktop Environment :: Screen Savers",
-                     "Topic :: Games/Entertainment :: Board Games"],
+      classifiers = classifiers,
       data_files = [("images", glob.glob("data/images/*.svg")),
                     ("sgf", glob.glob("data/sgf/*.sgf"))],
       requires = ["cairo", "gio", "glib", "gtk", "pango", "rsvg", 
                   "simpleparse"],
       distclass = my_distclass,
       cmdclass={'install': my_install})
-      
-if platform.system() == "Windows":
-    if os.access("dist/Go Games.scr", os.F_OK):
-        os.remove("dist/Go Games.scr")
-    os.rename("dist/gogames-screensaver.exe", "dist/Go Games.scr")
-

@@ -69,21 +69,19 @@ class GobanHBox(gtk.HBox):
         game_node = self.sgf_source.get_random_game()
         if game_node is None:
             if self.timeout_count >= self.max_timeout_count:
-                warnings.warn("Timed out getting a game - defaulting to local files")
-                self.goban_display.game_node = \
-                    sgfsources.FileSource(conf["sgf_folder"]).get_random_game()
-                glib.timeout_add(conf['start_delay'], self.run)
+                warnings.warn("Timed out getting a game - defaulting to local "
+                              "files")
+                game_node = sgfsources.FileSource(conf["sgf_folder"]).\
+                                                              get_random_game()
                 self.timeout_count = 0
-                self.goban_display.queue_draw()
-                self.update_annotations()
             else:
-                glib.timeout_add(self.new_game_wait, self.new_game)
                 self.timeout_count += 1
-        else:
-            self.goban_display.game_node = game_node
-            glib.timeout_add(conf['start_delay'], self.run)
-            self.goban_display.queue_draw()
-            self.update_annotations()
+                glib.timeout_add(self.new_game_wait, self.new_game)
+                return
+        self.goban_display.game_node = game_node
+        glib.timeout_add(conf['start_delay'], self.run)
+        self.goban_display.queue_draw()
+        self.update_annotations()
     
     def run(self):
         if not self.goban_display.game_node.child_nodes == []:

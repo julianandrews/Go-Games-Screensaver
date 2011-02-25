@@ -1,89 +1,64 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset='utf-8'>
-
-  <title>JulianAndrews/Go-Games-Screensaver @ GitHub</title>
-
-  <style type="text/css">
-    body {
-      margin-top: 1.0em;
-      background-color: #ffffff;
-      font-family: "Helvetica,Arial,FreeSans";
-      color: #000000;
-    }
-    #container {
-      margin: 0 auto;
-      width: 700px;
-    }
-    h1 { font-size: 3.8em; color: #42d56b; margin-bottom: 3px; }
-    h1 .small { font-size: 0.4em; }
-    h1 a { text-decoration: none }
-    h2 { font-size: 1.5em; color: #42d56b; }
-    h3 { text-align: center; color: #42d56b; }
-    a { color: #42d56b; }
-    .description { font-size: 1.2em; margin-bottom: 30px; margin-top: 30px; font-style: italic;}
-    .download { float: right; }
-    pre { background: #000; color: #fff; padding: 15px;}
-    hr { border: 0; width: 80%; border-bottom: 1px solid #aaa}
-    .footer { text-align:center; padding-top:30px; font-style: italic; }
-  </style>
+    <meta charset='utf-8'>
+    <title>JulianAndrews/Go-Games-Screensaver @ GitHub</title>
+    <link rel="stylesheet" type="text/css" name="style" href="style.css">
 </head>
 
 <body>
-  <a href="http://github.com/JulianAndrews/Go-Games-Screensaver"><img style="position: absolute; top: 0; right: 0; border: 0;" src="http://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub" /></a>
+    <div id="container">
 
-  <div id="container">
+        <h1><a href="http://github.com/JulianAndrews/Go-Games-Screensaver">Go-Games-Screensaver</a><span class="small">by <a href="http://github.com/JulianAndrews">JulianAndrews</a></span></h1>
 
-    <div class="download">
-      <a href="https://github.com/downloads/JulianAndrews/Go-Games-Screensaver/Go%20Games-0.10.tar.gz">
-        <img border="0" width="90" src="http://github.com/images/modules/download/tar.png"></a>
+        <div class="description">
+        A screensaver to replay games of go from both local and internet sources
+        </div>
+
+        <p>A gnome-screensaver theme to replay go games from sgf files.  Can use both local files and a variety of online sources.  Currently only tested under ubuntu 10.10 with python 2.6 (also runs under windows 7, but no installer exists, and the installation process is somewhat involved).</p>
+    
+        <h2>Dependencies</h2>
+            <p>python 2.6<br />
+            modules:<br />
+                cairo<br />
+                gio<br />
+                glib<br />
+                gtk<br />
+                pango<br />
+                rsvg<br />
+                simpleparse</p>
+
+        <h2>Install</h2>
+        <p>Simply download and install the <a href=""https://github.com/downloads/JulianAndrews/Go-Games-Screensaver/gogames-screensaver_0.16_all.deb">.deb</a> package!</p>
+        <p>Alternatively, ensure all needed python modules are installed.  For Ubuntu 10.10
+        <pre>$ sudo apt-get install python-simpleparse python-cairo python-rsvg</pre>
+        should be sufficient.  Then download the package and extract it and run
+        <pre>$ sudo python setup.py install</pre> 
+        in the source package folder.  You will need to get your own sgf files and put them in the /usr/share/gogames-screensaver/sgf folder, or configure the screensaver to look in another folder with gogames-screenaver -c</p>
+        
+        <h2>License</h2>
+        <p>GPL</p>
+        
+        <h2>Authors</h2>
+        <p>Julian Andrews</p>
+        
+        <h2>Contact</h2>
+        <p>(jandrews271@gmail.com)</p>
+        
+        <h2>Download</h2>
+        <p>You can download the current stable version with a package of public domain games
+            <a href="https://github.com/downloads/JulianAndrews/Go-Games-Screensaver/gogames-screensaver_0.16_all.deb">here</a><p>
+        <p>All games are from <a href="http://homepages.cwi.nl/~aeb/go/games/index.html">here.</a></p>
+        <p>Current master branch versions are also available in 
+            <a href="http://github.com/JulianAndrews/Go-Games-Screensaver/zipball/master">zip</a> or
+            <a href="http://github.com/JulianAndrews/Go-Games-Screensaver/tarball/master">tar</a> formats.</p>
+        <p>You can also clone the project with <a href="http://git-scm.com">Git</a> by running:
+            <pre>$ git clone git://github.com/JulianAndrews/Go-Games-Screensaver</pre>
+        </p>
+
+        <div class="footer">
+            get the source code on GitHub : <a href="http://github.com/JulianAndrews/Go-Games-Screensaver">JulianAndrews/Go-Games-Screensaver</a>
+        </div>
     </div>
-
-    <h1><a href="http://github.com/JulianAndrews/Go-Games-Screensaver">Go-Games-Screensaver</a>
-      <span class="small">by <a href="http://github.com/JulianAndrews">JulianAndrews</a></span></h1>
-
-    <div class="description">
-      A screensaver to replay games of go from both local and internet sources
-    </div>
-
-    <p>A gnome-screensaver theme to replay go games from sgf files.  Can use both local files and a variety of online sources.  Currently only tested under ubuntu 10.10 with python 2.6 (also runs under windows 7, but no installer exists, and the installation process is somewhat involved).</p><h2>Dependencies</h2>
-<p>python 2.6<br />
-modules:<br />
-    cairo<br />
-    gio<br />
-    glib<br />
-    gtk<br />
-    pango<br />
-    rsvg<br />
-    simpleparse</p>
-<h2>Install</h2>
-<p>Ensure all needed python modules are installed - on ubuntu 10.10
-<pre>$ sudo apt-get install python-simpleparse</pre>
-should be sufficient.  Then download the package and extract it and run
-<pre>$ sudo python setup.py install</pre> 
-in the source package folder</p>
-<h2>License</h2>
-<p>GPL</p>
-<h2>Authors</h2>
-<p>Julian Andrews</p>
-<h2>Contact</h2>
-<p> (jandrews271@gmail.com)</p>
-<h2>Download</h2>
-<p>You can download the current stable version with a package of public domain games
-    <a href="https://github.com/downloads/JulianAndrews/Go-Games-Screensaver/Go%20Games-0.10.tar.gz">here</a><p>
-<p>All games are from <a href="http://homepages.cwi.nl/~aeb/go/games/index.html">here.</a></p>
-<p>Current master branch versions are also available in 
-    <a href="http://github.com/JulianAndrews/Go-Games-Screensaver/zipball/master">zip</a> or
-    <a href="http://github.com/JulianAndrews/Go-Games-Screensaver/tarball/master">tar</a> formats.</p>
-<p>You can also clone the project with <a href="http://git-scm.com">Git</a> by running:
-    <pre>$ git clone git://github.com/JulianAndrews/Go-Games-Screensaver</pre>
-</p>
-
-    <div class="footer">
-      get the source code on GitHub : <a href="http://github.com/JulianAndrews/Go-Games-Screensaver">JulianAndrews/Go-Games-Screensaver</a>
-    </div>
-
-  </div>
 </body>
 </html>

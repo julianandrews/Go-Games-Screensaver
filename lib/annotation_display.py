@@ -190,7 +190,7 @@ class AnnotationDisplay(gtk.VBox):
         
         buff.set_modified(False)
         if not self.annotations.get("N") == None:
-            text = self.format_simpletext(self.annotations["N"]) + "\n"
+            text = format_simpletext(self.annotations["N"]) + "\n"
             buff.insert_with_tags_by_name(my_iter, text, "bold")
         if not self.annotations.get("V") == None:
             buff.insert_with_tags_by_name(my_iter, "Estimated score: %s" % 

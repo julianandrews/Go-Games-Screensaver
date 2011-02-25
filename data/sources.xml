@@ -1,0 +1,97 @@
+<?xml version="1.0" ?>
+<sources>
+    <source>
+        <sid>
+            eidogo
+        </sid>
+        <regex>
+            a href=\&quot;\./#(.*?)\&quot;
+        </regex>
+        <uri_str>
+            http://eidogo.com/backend/download.php?id=%s
+        </uri_str>
+        <help_str>
+            Games from eidogo.com
+        </help_str>
+        <page>
+            http://eidogo.com/games?q=+
+        </page>
+    </source>
+    <source>
+        <sid>
+            gokifu
+        </sid>
+        <regex>
+            &lt;a href=\&quot;/f/(.*?)\.sgf&quot; &gt;
+        </regex>
+        <uri_str>
+            http://gokifu.com/f/%s.sgf
+        </uri_str>
+        <help_str>
+            Games from gokifu.com
+        </help_str>
+        <page>
+            http://gokifu.com/?p=1
+        </page>
+        <page>
+            http://gokifu.com/?p=2
+        </page>
+        <page>
+            http://gokifu.com/?p=3
+        </page>
+        <page>
+            http://gokifu.com/?p=4
+        </page>
+        <page>
+            http://gokifu.com/?p=5
+        </page>
+    </source>
+    <source>
+        <sid>
+            gtl
+        </sid>
+        <regex>
+            /reviews/data/(.*?)\.sgf
+        </regex>
+        <uri_str>
+            http://gtl.xmp.net/reviews/data/%s.sgf
+        </uri_str>
+        <help_str>
+            Games from gtl.xmp.net
+        </help_str>
+        <page>
+            http://gtl.xmp.net/reviews/by_strength?pg=0
+        </page>
+        <page>
+            http://gtl.xmp.net/reviews/by_strength?pg=1
+        </page>
+        <page>
+            http://gtl.xmp.net/reviews/by_strength?pg=2
+        </page>
+        <page>
+            http://gtl.xmp.net/reviews/by_strength?pg=3
+        </page>
+        <page>
+            http://gtl.xmp.net/reviews/by_strength?pg=4
+        </page>
+        <page>
+            http://gtl.xmp.net/reviews/by_strength?pg=5
+        </page>
+        <page>
+            http://gtl.xmp.net/reviews/by_strength?pg=6
+        </page>
+        <page>
+            http://gtl.xmp.net/reviews/by_strength?pg=7
+        </page>
+        <page>
+            http://gtl.xmp.net/reviews/by_strength?pg=8
+        </page>
+        <page>
+            http://gtl.xmp.net/reviews/by_strength?pg=9
+        </page>
+        <page>
+            http://gtl.xmp.net/reviews/by_strength?pg=10
+        </page>
+    </source>
+</sources>
+

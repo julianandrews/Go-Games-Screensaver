@@ -21,8 +21,6 @@
 #   improve kgs and eidogo game_uri acquisition
 #   timeout on failed reads
 
-import time #testing!
-
 import gio
 import glib
 import itertools
@@ -33,9 +31,11 @@ import re
 import string
 import sys
 import warnings
+import xml.dom.minidom
 
 import gogame
 
+from config import sources
 from os_wrapper import data_folder, config_folder
 save_bad_sgf_data = False
 gameid_cache_file = "gameid_cache"
@@ -134,105 +134,58 @@ class FileSource(SGFSource):
             data = gfile.load_contents()[0]
             self.preloaded_data.append((data, uri))
 
-class WebSGFSource(SGFSource):
-    startup_delay = 500
-    
-    def __init__(self):
-        self.source_id = [k for k, v in source_id_map.iteritems() if 
-                                                            v == type(self)][0]
-        super(WebSGFSource, self).__init__()
-
+class WebSource(SGFSource):
+    def __init__(self, sid):
+        self.sid = sid
+        ix = [x[0] for x in sources].index(sid)
+        sid, self.uri_str, self.regex, self.help_str, self.pages = sources[ix]
+        super(WebSource, self).__init__()
+                
     def preload_game_uris(self):
-        gameids = gameid_cache.get(self.source_id, [])
-        self.game_uris = [self.game_url_str % x for x in gameids]
+        self.game_uris = []
+        gameids = gameid_cache.get(self.sid, [])
+        self.game_uris += [self.uri_str % x for x in gameids]
         if len(self.game_uris) > 0:
             self.preload_game()
         self.preload_gameids()
-        
+
     def preload_gameids(self):
-        gameid_cache[self.source_id] = []
-        gfile = gio.File(self.game_list_url)
-        gfile.load_contents_async(self._preload_gameid_cb)
+        self.game_uris = []
+        gameid_cache[self.sid] = []
+        for base_url in self.pages:
+            gfile = gio.File(base_url)
+            gfile.load_contents_async(self._preload_gameid_cb)
         
     def _preload_gameid_cb(self, gfile, result):
         try:
             data = gfile.load_contents_finish(result)[0]
-            self.gameids_from_data(data)
-            self.save_gameid_cache()
+        except glib.GError:
+            warnings.warn("Error loading '%s'" % self.sid)
+            return
+        ids = list(set(re.findall(self.regex, data)))
+        gameid_cache[self.sid] += ids
+        self.save_gameid_cache()
+        uri_list = [self.uri_str % i for i in ids]
+        self.game_uris += uri_list
+        if len(self.preloaded_data) == 0 and len(self.game_uris) > 0:
             self.preload_game()
-        except glib.GError, e:
-            warnings.warn("Error in gameid callback for %s:\n%s" % 
-                          (self.source_id, e.message))
         
     def save_gameid_cache(self):
         with open(os.path.join(config_folder, gameid_cache_file), 'w') as f:
             pickle.dump(gameid_cache, f)
         
-class KGSSource(WebSGFSource):
-
-    game_list_url = "http://kgs.fuseki.info/games_list.php?bs=wr"
-    game_url_str = "http://kgs.fuseki.info/save_game.php?id=%s"
-    min_gameid_count = 1000
-
-    def _preload_gameid_cb(self, gfile, result):
-        try:
-            data = gfile.load_contents_finish(result)[0]
-            gameid_cache[self.source_id] += \
-                                re.findall("OpenGame\\(\\'(\\w*?)\\'\\)", data)
-            self.game_uris = [self.game_url_str % x for x in 
-                                                 gameid_cache[self.source_id]]
-            if len(self.preloaded_data) == 0 and len(self.game_uris) > 0:
-                self.preload_game()
-            if len(gameid_cache[self.source_id]) < self.min_gameid_count:
-                start_str = "&id=%s" % gameid_cache[self.source_id][-1]
-                new_gfile =gio.File(self.game_list_url + start_str)
-                new_gfile.load_contents_async(self._preload_gameid_cb)
-            else:
-                self.save_gameid_cache()
-        except glib.GError:
-            warnings.warn("Error in callback getting KGS gameids.")
-
-class GoKifuSource(WebSGFSource):
-
-    game_list_url = "http://gokifu.com/index.php"
-    game_url_str = "http://gokifu.com/f/%s.sgf"
-
-    def gameids_from_data(self, data):
-        last_game_id = re.findall("/f/(\\w*?)\\.sgf", data)[0]
-        gameids = list(itertools.imap(lambda x: x.lstrip('0'), 
-                       itertools.takewhile(lambda x: not x == last_game_id, 
-                       ("%s%s%s" % (a, b, c) for a in string.digits for b in 
-                       string.ascii_lowercase for c in string.ascii_lowercase
-                       )))) + [last_game_id]
-        gameid_cache[self.source_id] = gameids
-        
-class EidoGoSource(WebSGFSource):
-
-    game_list_url = "http://eidogo.com/games?q=+"
-    game_url_str = "http://eidogo.com/backend/download.php?id=%s"
-
-    def gameids_from_data(self, data):
-        gameids = re.findall("<td><a href=\"\\./#(.*?)\">", data)
-        gameid_cache[self.source_id] = gameids
-
-        
 class MultiSource(SGFSource):
     
-    def __init__(self, source_ids, sgf_folder=None):
+    def __init__(self, sids, sgf_folder=None):
         self.sources = []
-        for sid in source_ids:
+        for sid in sids:
             if sid == 'file':
-                source = source_id_map[sid](sgf_folder)
+                self.sources.append(FileSource(sgf_folder))
             else:
-                source = source_id_map[sid]()
-            self.sources.append(source)
+                self.sources.append(WebSource(sid))
         if self.sources == ():
-            self.sources = (FileSource(sgf_folder), )
+            self.sources.append(FileSource(sgf_folder))
     
     def get_random_game(self):
         return random.choice(self.sources).get_random_game()
 
-source_id_map = {"file": FileSource,
-                 "kgs": KGSSource,
-                 "gokifu": GoKifuSource,
-                 "eidogo": EidoGoSource}

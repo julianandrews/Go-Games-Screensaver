@@ -29,6 +29,20 @@ from xml.dom.minidom import getDOMImplementation
 
 from os_wrapper import data_folder, config_folder, get_mode
 
+def get_xml_data(node):
+    return str(node.firstChild.data).strip()
+
+sources = []
+_sources_xml = xml.dom.minidom.parse(os.path.join(data_folder, "sources.xml"))
+for source_node in _sources_xml.getElementsByTagName("source"):
+    _sid = get_xml_data(source_node.getElementsByTagName("sid")[0])
+    _regex = get_xml_data(source_node.getElementsByTagName("regex")[0])
+    _uri_str = get_xml_data(source_node.getElementsByTagName("uri_str")[0])
+    _help_str = get_xml_data(source_node.getElementsByTagName("help_str")[0])
+    _pages = [get_xml_data(x) for x in source_node.getElementsByTagName("page")]
+    sources.append((_sid, _uri_str, _regex, _help_str, _pages))
+sources.append(('file', None, None, "Games from Local Files", None))
+
 class Configuration(dict):
 
     filename = 'config.xml'
@@ -72,7 +86,7 @@ class Configuration(dict):
         for node in xml_doc.firstChild.childNodes:
             if not node.nodeType == node.TEXT_NODE:
                 key = str(node.nodeName)
-                val = str(node.firstChild.data).strip()
+                val = get_xml_data(node)
                 if key == 'source':
                     self['sources'].append(val)
                 else:
@@ -80,12 +94,15 @@ class Configuration(dict):
             
     def parse_options(self):
         parser = optparse.OptionParser(usage="usage: %prog [options]")
+        parser.add_option("-c", dest="mode", action="store_const", const="c",
+                          default=self['mode'], 
+                          help="open the configuration dialog")
         parser.add_option("-d", dest="sgf_folder", default=self['sgf_folder'],
                           help="directory containing sgf files to display", 
                           metavar="DIR")
         parser.add_option("-m", dest="move_delay", metavar="MS", type="int",
                           default=self['move_delay'], 
-                          help="delay between move in ms")
+                          help="delay between moves in ms")
         parser.add_option("-s", dest="start_delay", metavar="MS", type="int",
                           default=self['start_delay'],
                           help="delay at start of new game in ms")
@@ -99,19 +116,11 @@ class Configuration(dict):
                           default=self['markup'], help="disable markup")
         parser.add_option("-f", dest="fullscreen", action="store_true",
                           default=False, help="fullscreen mode")
-        parser.add_option("--kgs", action="append_const", dest="sources",
-                          const="kgs", help="use games from kgs.fuseki.info")
-        parser.add_option("--gokifu", action="append_const", dest="sources",
-                          const="gokifu", help="use games from gokifu.com")
-        parser.add_option("--eidogo", action="append_const", dest="sources",
-                          const="eidogo", help="use games from eidogo.com")
-        parser.add_option("--file", action="append_const", dest="sources",
-                          const="file", help="use games from local files")
-        parser.add_option("-c", dest="mode", action="store_const", const="c",
-                          default=self['mode'], 
-                          help="open the configuration dialog")
         parser.add_option("--dark", dest="dark", action="store_true",
-                          default=False, help="make the board dark")
+                          default=False, help=optparse.SUPPRESS_HELP)
+        for sid, uri_str, regex, help_str, pages in sources:
+            parser.add_option("--%s" % sid, action="append_const", 
+                              dest="sources", const=sid, help=help_str)
         options, args = parser.parse_args()
         if options.sources is None:
             options.sources = self['sources']
@@ -125,6 +134,7 @@ class SSConfigWindow(gtk.Window):
         self.connect("destroy", gtk.main_quit)
         self.set_resizable(False)
         self.handle = conf.get('handle')
+        self.source_checkbuttons = {}
         vbox = gtk.VBox(spacing=6)
         align = gtk.Alignment()
         align.set_padding(12, 12, 12, 12)
@@ -168,14 +178,10 @@ class SSConfigWindow(gtk.Window):
         sources_align.set_padding(0, 12, 12, 0)
         vbox.pack_start(sources_align)
         sources_vbox = gtk.VBox()
-        self.kgs_check = gtk.CheckButton("KGS sgf files")
-        sources_vbox.pack_start(self.kgs_check)
-        self.gokifu_check = gtk.CheckButton("GoKifu.com sgf files")
-        sources_vbox.pack_start(self.gokifu_check)
-        self.eidogo_check = gtk.CheckButton("EidoGo.com sgf files")
-        sources_vbox.pack_start(self.eidogo_check)
-        self.file_check = gtk.CheckButton("Local sgf files")
-        sources_vbox.pack_start(self.file_check)
+        for sid, uri_str, regex, help_str, pages in sources:
+            checkbutton = gtk.CheckButton(help_str)
+            self.source_checkbuttons[sid] = checkbutton
+            sources_vbox.pack_start(checkbutton)
         file_chooser_hbox = gtk.HBox(spacing = 12)
         file_chooser_label = gtk.Label("Local SGF file directory:")
         file_chooser_hbox.pack_start(file_chooser_label)
@@ -223,14 +229,8 @@ class SSConfigWindow(gtk.Window):
         self.move_delay_spinner.set_value(self.conf["move_delay"]/1000.0)
         self.start_delay_spinner.set_value(self.conf["start_delay"]/1000.0)
         self.end_delay_spinner.set_value(self.conf["end_delay"]/1000.0)
-        if 'kgs' in self.conf["sources"]:
-            self.kgs_check.set_active(True)
-        if "eidogo" in self.conf["sources"]:
-            self.eidogo_check.set_active(True)
-        if "gokifu" in self.conf["sources"]:
-            self.gokifu_check.set_active(True)
-        if "file" in self.conf["sources"]:
-            self.file_check.set_active(True)
+        for source_id in self.conf["sources"]:
+            self.source_checkbuttons[source_id].set_active(True)
         self.markup_check.set_active(self.conf["markup"])
         self.annotations_check.set_active(self.conf["annotations"])
         self.file_chooser.set_filename(self.conf["sgf_folder"])
@@ -246,14 +246,9 @@ class SSConfigWindow(gtk.Window):
         self.conf['markup'] = int(self.markup_check.get_active())
         self.conf['sgf_folder'] = self.file_chooser.get_filename()
         self.conf['sources'] = []
-        if self.file_check.get_active():
-            self.conf['sources'].append('file') 
-        if self.kgs_check.get_active():
-            self.conf['sources'].append('kgs')
-        if self.gokifu_check.get_active():
-            self.conf['sources'].append('gokifu')
-        if self.eidogo_check.get_active():
-            self.conf['sources'].append('eidogo')
+        for sid, checkbutton in self.source_checkbuttons.iteritems():
+            if checkbutton.get_active():
+                self.conf['sources'].append(sid)
         self.conf.save()
         
     def on_apply(self, widget):

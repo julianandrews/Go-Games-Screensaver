@@ -9,11 +9,26 @@
 <body>
     <div id="container">
 
-        <h1><a href="http://github.com/JulianAndrews/Go-Games-Screensaver">Go-Games-Screensaver</a><span class="small">by <a href="http://github.com/JulianAndrews">JulianAndrews</a></span></h1>
+        <h1>
+            <a href="http://github.com/JulianAndrews/Go-Games-Screensaver">Go-Games-Screensaver</a>
+            <span class="small">by <a href="http://github.com/JulianAndrews">JulianAndrews</a></span>
+        </h1>
 
         <div class="description">
-        A screensaver to replay games of go from both local and internet sources
+            A screensaver to replay games of go from both local and 
+            internet sources
         </div>
+        <p>A gnome-screensaver theme to replay go games from sgf files.  
+        Can use both local files as well as games acquired automatically 
+        from online sources.  Online sources can be customized via xml - 
+        currently Gogames Screensaver supports games from eidogo.com, 
+        gokifu.com and the Go Teaching Ladder.  If you have ideas for 
+        other online sgf databases which should be supported, drop me a 
+        line!  (I'm looking into kgs archives support, but the 
+        organization of the files on kgs is obnoxious).</p>
+        <p>Gogames Screensaver has only been tested under Ubuntu 10.10 
+        with Python 2.6.  With some tweaking it can run in Windows 7, 
+        but I haven't yet gotten around to making an installer.</p>
     
         <h2>Dependencies</h2>
             <p>python 2.6<br />
@@ -27,12 +42,19 @@
                 simpleparse</p>
 
         <h2>Install</h2>
-        <p>Simply download and install the <a href="https://github.com/downloads/JulianAndrews/Go-Games-Screensaver/gogames-screensaver_0.16_all.deb">.deb</a> package!</p>
-        <p>Alternatively, ensure all needed python modules are installed.  For Ubuntu 10.10
+        <p>Simply download and install the 
+        <a href="https://github.com/downloads/JulianAndrews/Go-Games-Screensaver/gogames-screensaver_0.16_all.deb">.deb</a> 
+        package!  The .deb includes more than a thousand games downloaded from <p>All games are from <a href="http://homepages.cwi.nl/~aeb/go/games/index.html">here.</a></p>
+        <p>Alternatively, ensure all needed python modules are 
+        installed.  For Ubuntu 10.10
         <pre>$ sudo apt-get install python-simpleparse python-cairo python-rsvg</pre>
-        should be sufficient.  Then download the package and extract it and run
+        should be sufficient.  Then download the package and extract it 
+        and run
         <pre>$ sudo python setup.py install</pre> 
-        in the source package folder.  You will need to get your own sgf files and put them in the /usr/share/gogames-screensaver/sgf folder, or configure the screensaver to look in another folder with gogames-screenaver -c</p>
+        in the source package folder.  You will need to get your own sgf 
+        files and put them in the /usr/share/gogames-screensaver/sgf 
+        folder, or configure the screensaver to look in another folder 
+        with <pre>$ gogames-screenaver -c</pre></p>
         
         <h2>License</h2>
         <p>GPL</p>
@@ -44,9 +66,9 @@
         <p>(jandrews271@gmail.com)</p>
         
         <h2>Download</h2>
-        <p>You can download the current stable version with a package of public domain games
-            <a href="https://github.com/downloads/JulianAndrews/Go-Games-Screensaver/gogames-screensaver_0.16_all.deb">here</a><p>
-        <p>All games are from <a href="http://homepages.cwi.nl/~aeb/go/games/index.html">here.</a></p>
+        <p>You can download the current stable version with a package of 
+        public domain games
+        <a href="https://github.com/downloads/JulianAndrews/Go-Games-Screensaver/gogames-screensaver_0.16_all.deb">here</a>.</p>
         <p>Current master branch versions are also available in 
             <a href="http://github.com/JulianAndrews/Go-Games-Screensaver/zipball/master">zip</a> or
             <a href="http://github.com/JulianAndrews/Go-Games-Screensaver/tarball/master">tar</a> formats.</p>

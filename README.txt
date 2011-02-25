@@ -20,14 +20,23 @@ pango
 rsvg
 simpleparse
 
-under ubuntu, most of these modules should already be installed, simpleparse
-is provided by the python-simpleparse module in the repository.
+under ubuntu 10.10, most of these modules should already be installed, 
+all of them are provided by the combination of
+
+python-gnome2,
+python-cairo,
+python-simpleparse, and
+python-rsvg
 
 Next, as root, in the source folder run
 
 python setup.py install
 
 Done!
+
+Alternatively, a .deb package can be found at:
+
+http://julianandrews.github.com/Go-Games-Screensaver/
 
 
 Uninstallation

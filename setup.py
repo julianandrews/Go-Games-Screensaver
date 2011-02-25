@@ -111,7 +111,7 @@ elif platform.system() == "Linux":
     classifiers.append("Operating System :: POSIX :: Linux")
 
 setup(name="gogames-screensaver",
-      version="0.15",
+      version="0.16",
       url="http://github.com/JulianAndrews/Go-Games-Screensaver",
       description = "A screensaver which displays go games from sgf files.",
       author = "Julian Andrews",

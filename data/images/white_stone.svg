@@ -19,66 +19,41 @@
   <defs
      id="defs4">
     <linearGradient
-       id="linearGradient3762">
-      <stop
-         style="stop-color:#ffffff;stop-opacity:1;"
-         offset="0"
-         id="stop3764" />
-      <stop
-         style="stop-color:#e6e6e6;stop-opacity:1;"
-         offset="0.58333331"
-         id="stop3766" />
-      <stop
-         id="stop3768"
-         offset="1"
-         style="stop-color:#aaaaaa;stop-opacity:1;" />
-    </linearGradient>
-    <linearGradient
        id="linearGradient3769">
       <stop
          id="stop3777"
          offset="0"
-         style="stop-color:#a3a5a5;stop-opacity:1;" />
+         style="stop-color:#ffffff;stop-opacity:1;" />
       <stop
-         id="stop3783"
-         offset="0.59722221"
-         style="stop-color:#3f3f3f;stop-opacity:1;" />
+         id="stop3824"
+         offset="0.36153716"
+         style="stop-color:#e6e6e6;stop-opacity:1;" />
       <stop
-         style="stop-color:#000000;stop-opacity:1;"
+         style="stop-color:#d7d7d7;stop-opacity:1;"
+         offset="0.58566296"
+         id="stop3762" />
+      <stop
+         style="stop-color:#c8c8c8;stop-opacity:1;"
+         offset="0.77769732"
+         id="stop3828" />
+      <stop
+         style="stop-color:#aaaaaa;stop-opacity:1;"
          offset="1"
          id="stop3773" />
     </linearGradient>
     <radialGradient
        inkscape:collect="always"
-       xlink:href="#linearGradient3762"
+       xlink:href="#linearGradient3769"
        id="radialGradient3775"
-       cx="144.1304"
-       cy="154.77353"
-       fx="124.20482"
-       fy="124.73188"
+       cx="177.65202"
+       cy="146.72552"
+       fx="129.06863"
+       fy="142.86308"
        r="78.476151"
        gradientUnits="userSpaceOnUse"
-       spreadMethod="pad" />
+       spreadMethod="pad"
+       gradientTransform="matrix(0.62987741,0.62987745,-0.62987745,0.62987742,122.52713,-58.133718)" />
   </defs>
-  <sodipodi:namedview
-     id="base"
-     pagecolor="#ffffff"
-     bordercolor="#666666"
-     borderopacity="1.0"
-     inkscape:pageopacity="0"
-     inkscape:pageshadow="2"
-     inkscape:zoom="1"
-     inkscape:cx="-335.7255"
-     inkscape:cy="187.59124"
-     inkscape:document-units="px"
-     inkscape:current-layer="layer1"
-     showgrid="false"
-     inkscape:showpageshadow="true"
-     inkscape:window-width="1487"
-     inkscape:window-height="881"
-     inkscape:window-x="39"
-     inkscape:window-y="24"
-     inkscape:window-maximized="0" />
   <metadata
      id="metadata7">
     <rdf:RDF>
@@ -87,7 +62,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
         <dc:creator>
           <cc:Agent>
             <dc:title>Julian Andrews</dc:title>
@@ -135,7 +110,7 @@
        transform="matrix(1.5658261,0,0,1.5658261,-91.796973,687.89992)" />
     <path
        sodipodi:type="arc"
-       style="fill:url(#radialGradient3775);fill-opacity:1;stroke:none;stroke-width:0.97849940999999996;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       style="fill:url(#radialGradient3775);fill-opacity:1;stroke:none;stroke-width:0.63864052000000004;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;opacity:1"
        id="path3767"
        sodipodi:cx="144.1304"
        sodipodi:cy="154.77353"

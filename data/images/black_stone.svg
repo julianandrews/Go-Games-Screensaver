@@ -23,11 +23,7 @@
       <stop
          id="stop3777"
          offset="0"
-         style="stop-color:#a3a5a5;stop-opacity:1;" />
-      <stop
-         id="stop3783"
-         offset="0.59722221"
-         style="stop-color:#3f3f3f;stop-opacity:1;" />
+         style="stop-color:#a5a5a5;stop-opacity:1;" />
       <stop
          style="stop-color:#000000;stop-opacity:1;"
          offset="1"
@@ -37,33 +33,15 @@
        inkscape:collect="always"
        xlink:href="#linearGradient3769"
        id="radialGradient3775"
-       cx="144.1304"
-       cy="154.77353"
-       fx="124.20482"
-       fy="124.73188"
+       cx="171.02031"
+       cy="143.71111"
+       fx="136.48154"
+       fy="139.30521"
        r="78.476151"
        gradientUnits="userSpaceOnUse"
-       spreadMethod="pad" />
+       spreadMethod="pad"
+       gradientTransform="matrix(0.63728027,0.63728029,-0.63728028,0.63728028,122.37628,-60.326729)" />
   </defs>
-  <sodipodi:namedview
-     id="base"
-     pagecolor="#ffffff"
-     bordercolor="#666666"
-     borderopacity="1.0"
-     inkscape:pageopacity="0"
-     inkscape:pageshadow="2"
-     inkscape:zoom="2"
-     inkscape:cx="38.38795"
-     inkscape:cy="156.66481"
-     inkscape:document-units="px"
-     inkscape:current-layer="layer1"
-     showgrid="false"
-     inkscape:showpageshadow="true"
-     inkscape:window-width="1487"
-     inkscape:window-height="881"
-     inkscape:window-x="39"
-     inkscape:window-y="24"
-     inkscape:window-maximized="0" />
   <metadata
      id="metadata7">
     <rdf:RDF>
@@ -120,7 +98,7 @@
        transform="matrix(1.5658261,0,0,1.5658261,-91.796973,687.89992)" />
     <path
        sodipodi:type="arc"
-       style="fill:url(#radialGradient3775);fill-opacity:1;stroke:#000000;stroke-width:0.97849940999999996;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       style="fill:url(#radialGradient3775);fill-opacity:1;stroke:#000000;stroke-width:0.63864052000000004;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;opacity:1"
        id="path3767"
        sodipodi:cx="144.1304"
        sodipodi:cy="154.77353"

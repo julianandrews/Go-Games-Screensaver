@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+#
 # Copyright (c) 2010 Julian Andrews.
 # All rights reserved.
 #
@@ -18,17 +20,14 @@
 #    <http://www.gnu.org/licenses/>.
 
 import os
-import platform
+import sys
 
-data_folder = os.path.join(os.path.split(os.path.dirname(__file__))[0], "data")
+root_folder = os.path.dirname(os.path.dirname(os.path.dirname(
+                                                  os.path.realpath(__file__))))
+lib_folder = os.path.join(root_folder, "usr", "share", "gogames-screensaver")
+sys.path.insert(0, lib_folder)
+os.chdir(root_folder)
 
-if platform.system() == 'Windows':
-    from scr_windows import get_mode, WinSSWindow as SSWindow
-    config_folder = os.path.join(os.getenv("APPDATA"), "gogames-screensaver")
-elif platform.system() == 'Linux':
-    from scr_linux import GsThemeWindow as SSWindow
-    config_folder = os.path.join(os.getenv("HOME"), ".gogames-screensaver")
-    def get_mode():
-        return None, None
-else:
-    raise RuntimeError("Unsuported OS: %s" % platform.system())
+from gogames_screensaver.gogames_screensaver import start
+
+start()

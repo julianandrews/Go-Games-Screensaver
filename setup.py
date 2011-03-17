@@ -24,6 +24,7 @@ if platform.system() == "Windows":
 
 from distutils.core import setup, Distribution
 import distutils.command.install
+import distutils.command.install_egg_info
 import distutils.util
 import distutils.dir_util
 import glob
@@ -34,15 +35,9 @@ class LinuxInstall(distutils.command.install.install):
     def finalize_options(self):
         distutils.command.install.install.finalize_options(self)
         root = self.root or '/'
-        self.install_lib = distutils.util.change_root(root, 
-                                              "/usr/share/gogames-screensaver")
-        self.install_platlib = distutils.util.change_root(root, 
-                                              "/usr/share/gogames-screensaver")
-        self.install_purelib =distutils.util.change_root(root, 
-                                              "/usr/share/gogames-screensaver")
+        self.install_lib = root
         self.install_scripts = distutils.util.change_root(root, "/usr/bin")
-        self.install_data = distutils.util.change_root(root, 
-                                         "/usr/share/gogames-screensaver/data")
+        self.install_data = root
 
     def run(self):
         distutils.command.install.install.run(self)
@@ -66,11 +61,17 @@ class LinuxInstall(distutils.command.install.install):
         target = os.path.join(ss_exec_dir, os.path.basename(bin_file))
         distutils.util.execute(os.symlink, (source, target))
         distutils.util.execute(os.popen, ("update-gconf-defaults", ))
+        
+class LinuxEggInfoInstall(distutils.command.install_egg_info.install_egg_info):
+    
+    def run(self):
+        pass
 
 class LinuxGogamesDistribution(Distribution):
     def __init__(self, *args):
         Distribution.__init__(self, *args)
-        self.scripts = ["gogames-screensaver", "gogames-sgf-thumbnailer"]
+        self.scripts = ["usr/bin/gogames-screensaver", 
+                        "usr/bin/gogames-sgf-thumbnailer"]
 
 class WindowsGogamesDistribution(Distribution):
     def __init__(self, *args):
@@ -82,7 +83,8 @@ class WindowsGogamesDistribution(Distribution):
         self.console = []
         self.zipfile = None
                        
-modules = [os.path.splitext(fn)[0] for fn in glob.glob("lib/*.py")]
+modules = [os.path.splitext(fn)[0] for fn in 
+           glob.glob("usr/share/gogames-screensaver/gogames_screensaver/*.py")]
 classifiers = ["Development Status :: 4 - Beta",
                "Environment :: X11 Applications :: Gnome",
                "License :: OSI Approved :: GNU General Public License "
@@ -96,22 +98,26 @@ classifiers = ["Development Status :: 4 - Beta",
 if platform.system() == "Windows":
     my_distclass = WindowsGogamesDistribution
     my_install = distutils.command.install.install
+    my_egg_info_install = distutils.command.install_egg_info.install_egg_info
     try:
-        modules.remove("lib/scr_linux")
+        modules.remove("usr/share/gogames-screensaver/gogames_screensaver/"
+                       "scr_linux")
     except ValueError:
         pass
     classifiers.append("Operating System :: Microsoft :: Windows")
 elif platform.system() == "Linux":
     my_distclass = LinuxGogamesDistribution
     my_install = LinuxInstall
+    my_egg_info_install = LinuxEggInfoInstall
     try:
-        modules.remove("lib/scr_windows")
+        modules.remove("usr/share/gogames-screensaver/gogames_screensaver/"
+                       "scr_windows")
     except ValueError:
         pass
     classifiers.append("Operating System :: POSIX :: Linux")
 
 setup(name="gogames-screensaver",
-      version="0.16",
+      version="0.18",
       url="http://github.com/JulianAndrews/Go-Games-Screensaver",
       description = "A screensaver which displays go games from sgf files.",
       author = "Julian Andrews",
@@ -119,10 +125,14 @@ setup(name="gogames-screensaver",
       py_modules = modules, 
       keywords = ["Go", "Weiqi", "Baduk", "Screensaver", "Gnome"],
       classifiers = classifiers,
-      data_files = [("images", glob.glob("data/images/*.svg")),
-                    ("sgf", glob.glob("data/sgf/*.sgf")),
-                    ("", glob.glob("data/*.xml"))],
+      data_files = [("usr/share/gogames-screensaver/images", 
+                     glob.glob("usr/share/gogames-screensaver/images/*.svg")),
+                    ("usr/share/gogames-screensaver/sgf", 
+                     glob.glob("usr/share/gogames-screensaver/sgf/*.sgf")),
+                    ("etc/xdg/gogames-screensaver", 
+                     glob.glob("etc/xdg/gogames-screensaver/*.xml"))],
       requires = ["cairo", "gio", "glib", "gtk", "pango", "rsvg", 
                   "simpleparse"],
       distclass = my_distclass,
-      cmdclass={'install': my_install})
+      cmdclass={'install': my_install,
+                'install_egg_info': my_egg_info_install})

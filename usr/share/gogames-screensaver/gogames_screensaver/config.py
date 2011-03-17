@@ -27,26 +27,39 @@ import shutil
 import xml.dom.minidom
 from xml.dom.minidom import getDOMImplementation
 
-from os_wrapper import data_folder, config_folder, get_mode
+from constants import config_folder, default_config_folder
+from sswindow import get_mode
 
 def get_xml_data(node):
     return str(node.firstChild.data).strip()
 
-sources = []
-_sources_xml = xml.dom.minidom.parse(os.path.join(data_folder, "sources.xml"))
-for source_node in _sources_xml.getElementsByTagName("source"):
-    _sid = get_xml_data(source_node.getElementsByTagName("sid")[0])
-    _regex = get_xml_data(source_node.getElementsByTagName("regex")[0])
-    _uri_str = get_xml_data(source_node.getElementsByTagName("uri_str")[0])
-    _help_str = get_xml_data(source_node.getElementsByTagName("help_str")[0])
-    _pages = [get_xml_data(x) for x in source_node.getElementsByTagName("page")]
-    sources.append((_sid, _uri_str, _regex, _help_str, _pages))
-sources.append(('file', None, None, "Games from Local Files", None))
+def data_from_tagname(node, tagname):
+    return [get_xml_data(x) for x in node.getElementsByTagName(tagname)]
+
+def get_sources():
+    filename = os.path.join(config_folder, "sources.xml")
+    if not os.path.isfile(filename):
+        if not os.path.isdir(config_folder):
+            os.makedirs(config_folder, 0700)
+        shutil.copy(os.path.join(default_config_folder, "sources.xml"), 
+                    config_folder)
+    sources_xml = xml.dom.minidom.parse(os.path.join(config_folder, "sources.xml"))
+    sources = []
+    for source_node in sources_xml.getElementsByTagName("source"):
+        sid = data_from_tagname(source_node, "sid")[0]
+        regex = data_from_tagname(source_node, "regex")[0]
+        uri_str = data_from_tagname(source_node, "uri_str")[0]
+        help_str = data_from_tagname(source_node, "help_str")[0]
+        pages = data_from_tagname(source_node, "page")
+        sources.append((sid, uri_str, regex, help_str, pages))
+    sources.append(('file', None, None, "Games from Local Files", None))
+    return sources
+
+sources = get_sources()
 
 class Configuration(dict):
 
     filename = 'config.xml'
-    default_filename = 'default_config.xml'
     xml_props = ('move_delay', 'start_delay', 'end_delay','markup', 
                  'annotations', 'sgf_folder')
     xml_prop_types = (int, int, int, int, int, str)
@@ -77,8 +90,8 @@ class Configuration(dict):
     def load(self):
         if not os.path.isfile(os.path.join(config_folder, self.filename)):
             if not os.path.isdir(config_folder):
-                os.mkdir(config_folder)
-            shutil.copy(os.path.join(data_folder, self.default_filename), 
+                os.makedirs(config_folder, 0700)
+            shutil.copy(os.path.join(default_config_folder, self.filename), 
                         os.path.join(config_folder, self.filename))
         self["sources"] = []
         xml_doc = xml.dom.minidom.parse(os.path.join(config_folder, 
@@ -267,3 +280,4 @@ class DelaySpinButton(gtk.SpinButton):
         self.configure(None, 2, 1)
         self.set_range(0, 3600)
         self.set_increments(.1, 5)
+

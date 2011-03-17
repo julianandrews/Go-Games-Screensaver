@@ -1,3 +1,4 @@
 include *.txt gogames-screensaver.desktop *.sh 10_gogames-screensaver
-recursive-include data *
-
+recursive-include etc *.xml
+recursive-include usr/share/gogames-screensaver/images *.svg
+recursive-include usr/share/gogames-screensaver/sgf *.sgf

@@ -27,7 +27,7 @@ import math
 import os
 import rsvg
 
-from os_wrapper import data_folder
+from constants import data_folder
 
 class GobanDisplay(gtk.DrawingArea):
     __gsignals__ = {"expose_event": "override"}
@@ -326,7 +326,8 @@ class GobanDisplay(gtk.DrawingArea):
         
     def real_line_spacing(self):
         if self.scale > 1:
-            return 2 * int(round(self.scale * (self.board_size - 1) * self.line_spacing) / (self.board_size - 1) / 2)
+            return 2 * int(round(self.scale * (self.board_size - 1) * \
+                   self.line_spacing) / (self.board_size - 1) / 2)
         else:
             return self.scale * self.line_spacing
 

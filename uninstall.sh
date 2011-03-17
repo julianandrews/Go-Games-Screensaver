@@ -22,6 +22,7 @@
 ss_dir=$(pkg-config --variable=themesdir gnome-screensaver)
 rm $ss_dir/gogames-screensaver.desktop;
 rm -r /usr/share/gogames-screensaver;
+rm -r /etc/xdg/gogames-screensaver
 rm /usr/bin/gogames-screensaver;
 rm /usr/bin/gogames-sgf-thumbnailer;
 rm /usr/share/gconf/defaults/10_gogames-screensaver

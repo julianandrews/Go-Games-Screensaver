@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-#
 # Copyright (c) 2010 Julian Andrews.
 # All rights reserved.
 #
@@ -19,13 +17,14 @@
 #    along with Go Games Screensaver.  If not, see 
 #    <http://www.gnu.org/licenses/>.
 
-import sys
+import platform
 
-try:
-    from lib.gogames_screensaver import start
-except ImportError:
-    lib_folder = "/usr/share/gogames-screensaver"
-    sys.path.insert(0, lib_folder)
-    from lib.gogames_screensaver import start
+if platform.system() == 'Windows':
+    from scr_windows import get_mode, WinSSWindow as SSWindow
+elif platform.system() == 'Linux':
+    from scr_linux import GsThemeWindow as SSWindow
+    def get_mode():
+        return None, None
+else:
+    raise RuntimeError("Unsuported OS: %s" % platform.system())
 
-start()

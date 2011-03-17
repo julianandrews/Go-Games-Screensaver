@@ -26,7 +26,7 @@ import config
 import goban_display
 import sgfsources
 
-from os_wrapper import *
+import sswindow
 
 conf = config.Configuration()
         
@@ -102,7 +102,7 @@ def start():
     if conf.get('mode') == 'c':
         window = config.SSConfigWindow(conf)
     else:
-        window = SSWindow()
+        window = sswindow.SSWindow()
         window.modify_bg(gtk.STATE_NORMAL, gtk.gdk.Color(0, 0, 0, 0))
         if conf["fullscreen"]:
             window.fullscreen()

@@ -36,11 +36,11 @@ import xml.dom.minidom
 import gogame
 
 from config import sources
-from os_wrapper import data_folder, config_folder
-save_bad_sgf_data = False
+from constants import data_folder, cache_folder, save_bad_sgf_data
 gameid_cache_file = "gameid_cache"
+
 try:
-    with open(os.path.join(config_folder, gameid_cache_file)) as f:
+    with open(os.path.join(cache_folder, gameid_cache_file)) as f:
         gameid_cache = pickle.load(f)
 except IOError:
     gameid_cache = {}
@@ -92,11 +92,9 @@ class SGFSource(object):
 
     @staticmethod
     def save_sgf(data):
-        folder = os.path.join(config_folder, "sgf_fail")
+        folder = os.path.join(cache_folder, "sgf_fail")
         if not os.path.isdir(folder):
-            if not os.path.isdir(config_folder):
-                os.mkdir(config_folder)
-            os.mkdir(folder)
+            os.makedirs(folder, 0700)
         num = ([0] + sorted(int(a) for a, b in map(os.path.splitext, 
                os.listdir(folder)) if b == '.sgf'))[-1] + 1
         filename = os.path.join(folder, "%s.sgf" % num)
@@ -171,7 +169,9 @@ class WebSource(SGFSource):
             self.preload_game()
         
     def save_gameid_cache(self):
-        with open(os.path.join(config_folder, gameid_cache_file), 'w') as f:
+        if not os.path.isdir(cache_folder):
+            os.makedirs(cache_folder, 0700)
+        with open(os.path.join(cache_folder, gameid_cache_file), 'w') as f:
             pickle.dump(gameid_cache, f)
         
 class MultiSource(SGFSource):

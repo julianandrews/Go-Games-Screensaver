@@ -47,6 +47,10 @@ h2 { font-size: 1.5em; }
     font-style: italic;
 }
 
+.download {
+    float: right;
+}
+
 pre {
     background: #000; 
     color: #fff;

@@ -25,10 +25,13 @@
         gokifu.com and the Go Teaching Ladder.  If you have ideas for 
         other online sgf databases which should be supported, drop me a 
         line!  (I'm looking into kgs archives support, but the 
-        organization of the files on kgs is obnoxious).</p>
+        organization of the files on kgs is obnoxious - suggestions on this front
+        are very welcome).</p>
         <p>Gogames Screensaver has only been tested under Ubuntu 10.10 
         with Python 2.6.  With some tweaking it can run in Windows 7, 
-        but I haven't yet gotten around to making an installer.</p>
+        but I haven't yet gotten around to making an installer.  If you get this
+        running on another system, contact me, and tell me how you did it
+        so that I can post about it here!</p>
     
         <h2>Dependencies</h2>
             <p>python 2.6<br />
@@ -43,11 +46,14 @@
 
         <h2>Install</h2>
         <p>Simply download and install the 
-        <a href="https://github.com/downloads/JulianAndrews/Go-Games-Screensaver/gogames-screensaver_0.16_all.deb">.deb</a> 
-        package!  The .deb includes more than a thousand games downloaded from <p>All games are from <a href="http://homepages.cwi.nl/~aeb/go/games/index.html">here.</a></p>
+        <a href="https://github.com/downloads/JulianAndrews/Go-Games-Screensaver/gogames-screensaver_0.18_all.deb">.deb</a> 
+        package!  The .deb includes more than a thousand games collected by 
+        Andries E. Brouwer - you can find them
+        <a href="http://homepages.cwi.nl/~aeb/go/games/index.html">here.</a></p>
         <p>Alternatively, ensure all needed python modules are 
         installed.  For Ubuntu 10.10,
         <pre>$ sudo apt-get install python-simpleparse python-cairo python-rsvg</pre>
+<<<<<<< HEAD
         should be sufficient.  Then download the package and extract it 
         and in the source package folder run:
         <pre>$ sudo python setup.py install</pre> 
@@ -55,6 +61,17 @@
         /usr/share/gogames-screensaver/sgf folder, or configure the 
         screensaver to look in another folder with 
         <pre>$ gogames-screenaver -c</pre></p>
+=======
+        should be sufficient.  Then download the package, extract it and run
+        <pre>$ sudo python setup.py install</pre> 
+        in the source package folder.  You will need to get your own sgf 
+        files and put them in the /usr/share/gogames-screensaver/sgf 
+        folder, or configure the screensaver to look in another folder 
+        with <pre>$ gogames-screenaver -c</pre> as the source package doesn't include the sgfs</p>
+        <p>Currently, the setup.py method doesn't seem to be working.  The files all install 
+        to the correct locations and the program and thumbnailers run, but gnome doesn't 
+        recognize the screensaver.  If you have any ideas how to fix this, let me know!</p>
+>>>>>>> 09ad8f16de2bf14e74828c5cede8856ae22b2e48
         
         <h2>License</h2>
         <p>GPL</p>
@@ -68,14 +85,13 @@
         <h2>Download</h2>
         <p>You can download the current stable version with a package of 
         public domain games
-        <a href="https://github.com/downloads/JulianAndrews/Go-Games-Screensaver/gogames-screensaver_0.16_all.deb">here</a>.</p>
+        <a href="https://github.com/downloads/JulianAndrews/Go-Games-Screensaver/gogames-screensaver_0.18_all.deb">here</a>.</p>
         <p>Current master branch versions are also available in 
             <a href="http://github.com/JulianAndrews/Go-Games-Screensaver/zipball/master">zip</a> or
             <a href="http://github.com/JulianAndrews/Go-Games-Screensaver/tarball/master">tar</a> formats.</p>
         <p>You can also clone the project with <a href="http://git-scm.com">Git</a> by running:
             <pre>$ git clone git://github.com/JulianAndrews/Go-Games-Screensaver</pre>
         </p>
-        
         <div class="footer">
             get the source code on GitHub : <a href="http://github.com/JulianAndrews/Go-Games-Screensaver">JulianAndrews/Go-Games-Screensaver</a>
         </div>

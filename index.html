@@ -18,20 +18,35 @@
             A screensaver to replay games of go from both local and 
             internet sources
         </div>
+        <div class="thumbbox">
+            <a href="images/ss.png">
+                <img src="images/ss_thumb.png" alt="screenshot preview" />
+            </a>
+            <br />
+            <p>Go Games Screensaver in action</p>
+        </div>
         <p>A gnome-screensaver theme to replay go games from sgf files.  
         Uses both local files as well as games acquired automatically 
-        from online sources.  Online sources can be customized via xml - 
+        from online sources.  Includes an sgf thumbnailer for gnome.
+        Online sources can be customized via xml - 
         currently Gogames Screensaver supports games from eidogo.com, 
         gokifu.com and the Go Teaching Ladder.  If you have ideas for 
         other online sgf databases which should be supported, drop me a 
         line!  (I'm looking into kgs archives support, but the 
-        organization of the files on kgs is obnoxious - suggestions on this front
-        are very welcome).</p>
+        organization of the files on kgs is obnoxious - suggestions on 
+        this front are very welcome).</p>
+        <div class="thumbbox">
+            <a href="images/tmbss.jpg">
+                <img src="images/tmbss_thumb.jpg" alt="thumbnailer preview" />
+            </a>
+            <br />
+            <p>The thumbnailer in action</p>
+        </div>
         <p>Gogames Screensaver has only been tested under Ubuntu 10.10 
         with Python 2.6.  With some tweaking it can run in Windows 7, 
-        but I haven't yet gotten around to making an installer.  If you get this
-        running on another system, contact me, and tell me how you did it
-        so that I can post about it here!</p>
+        but I haven't yet gotten around to making an installer.  If you 
+        get this running on another system, contact me, and tell me how 
+        you did it so that I can post about it here!</p>
     
         <h2>Dependencies</h2>
             <p>python 2.6<br />
@@ -47,31 +62,25 @@
         <h2>Install</h2>
         <p>Simply download and install the 
         <a href="https://github.com/downloads/JulianAndrews/Go-Games-Screensaver/gogames-screensaver_0.18_all.deb">.deb</a> 
-        package!  The .deb includes more than a thousand games collected by 
-        Andries E. Brouwer - you can find them
+        package!  The .deb includes more than a thousand games collected 
+        by Andries E. Brouwer - you can find them
         <a href="http://homepages.cwi.nl/~aeb/go/games/index.html">here.</a></p>
         <p>Alternatively, ensure all needed python modules are 
         installed.  For Ubuntu 10.10,
         <pre>$ sudo apt-get install python-simpleparse python-cairo python-rsvg</pre>
-<<<<<<< HEAD
-        should be sufficient.  Then download the package and extract it 
-        and in the source package folder run:
-        <pre>$ sudo python setup.py install</pre> 
-        You will need to get your own sgf files and put them in the 
-        /usr/share/gogames-screensaver/sgf folder, or configure the 
-        screensaver to look in another folder with 
-        <pre>$ gogames-screenaver -c</pre></p>
-=======
         should be sufficient.  Then download the package, extract it and run
         <pre>$ sudo python setup.py install</pre> 
         in the source package folder.  You will need to get your own sgf 
         files and put them in the /usr/share/gogames-screensaver/sgf 
         folder, or configure the screensaver to look in another folder 
-        with <pre>$ gogames-screenaver -c</pre> as the source package doesn't include the sgfs</p>
-        <p>Currently, the setup.py method doesn't seem to be working.  The files all install 
-        to the correct locations and the program and thumbnailers run, but gnome doesn't 
-        recognize the screensaver.  If you have any ideas how to fix this, let me know!</p>
->>>>>>> 09ad8f16de2bf14e74828c5cede8856ae22b2e48
+        with 
+        <pre>$ gogames-screenaver -c</pre> 
+        as the source package doesn't include the sgfs</p>
+        <p>Currently, the setup.py method doesn't seem to be working.  
+        The files all install to the correct locations and the program 
+        and thumbnailers run, but gnome doesn't recognize the 
+        screensaver.  If you have any ideas how to fix this, let me 
+        know!</p>
         
         <h2>License</h2>
         <p>GPL</p>

@@ -1,6 +1,5 @@
 body {
-    margin-top: 2em;
-    margin-bottom: 2em;
+    margin: 2em;
     background-image: url("images/bg.png");
 }
     
@@ -10,39 +9,53 @@ body {
     background-color: #000000;
     margin: 0 auto;
     padding: 2em;
-    width: 700px;
+    width: 44em;
 }
 
-h1, h2, h3, a {
-    color: #42d56b;
-}
+h1, a { color: #5ECDE5; }
+h2 { color: #765EE5; }
 
-h1 {
-    font-size: 2.5em; 
-    margin-bottom: 3px;
-}
-
+h1 { font-size: 2.5em; }
 h1 .small { font-size: 0.4em; }
 h1 a { text-decoration: none }
 h2 { font-size: 1.5em; }
-h3 { text-align: center;}
+
+.thumbbox {
+    margin: 1em;
+    padding: 1em;
+    float: right;
+    clear: right;
+    text-align: center;
+}
+
+.thumbbox a {
+    text-decoration: none;
+}
+
+.thumbbox img { 
+    border: 1px solid white; 
+}
+
+.thumbbox p {
+    font-size: 0.8em;
+}
 
 .description { 
     font-size: 1.2em; 
-    margin-bottom: 30px; 
-    margin-top: 30px; 
+    margin-bottom: 1.8em; 
+    margin-top: 1.8em; 
     font-style: italic;
 }
 
 pre {
     background: #000; 
     color: #fff;
-    padding: 15px;
+    padding: 1.4em;
     border: 1px dashed white;
 }
 
 .footer { 
     text-align:center; 
-    padding-top:30px; 
+    padding-top:1.8em; 
     font-style: italic;
 }

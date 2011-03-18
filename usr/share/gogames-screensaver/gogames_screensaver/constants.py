@@ -26,7 +26,8 @@ data_folder = os.path.join(os.curdir, "usr", "share", "gogames-screensaver")
 if platform.system() == 'Windows':
     config_folder = os.path.join(os.getenv("APPDATA"), "gogames-screensaver")
     cache_folder = config_folder
-    default_config_folder = data_folder
+    default_config_folder = os.path.join(os.curdir, "etc", "xdg", 
+                                         "gogames-screensaver")
 elif platform.system() == 'Linux':
     import xdg.BaseDirectory
     config_folder = os.path.join(xdg.BaseDirectory.xdg_config_home, 

@@ -82,9 +82,10 @@ class WindowsGogamesDistribution(Distribution):
                          'icon_resources': [(1,'icons/icon.ico')]}]
         self.console = []
         self.zipfile = None
-                       
+
 modules = [os.path.splitext(fn)[0] for fn in 
-           glob.glob("usr/share/gogames-screensaver/gogames_screensaver/*.py")]
+           glob.glob(os.path.join("usr", "share", "gogames-screensaver", 
+                                  "gogames_screensaver", "*.py"))]
 classifiers = ["Development Status :: 4 - Beta",
                "Environment :: X11 Applications :: Gnome",
                "License :: OSI Approved :: GNU General Public License "
@@ -94,14 +95,13 @@ classifiers = ["Development Status :: 4 - Beta",
                "Topic :: Desktop Environment :: Screen Savers",
                "Topic :: Games/Entertainment :: Board Games"]
 
-
 if platform.system() == "Windows":
     my_distclass = WindowsGogamesDistribution
     my_install = distutils.command.install.install
     my_egg_info_install = distutils.command.install_egg_info.install_egg_info
     try:
-        modules.remove("usr/share/gogames-screensaver/gogames_screensaver/"
-                       "scr_linux")
+        modules.remove(os.path.join("usr", "share", "gogames-screensaver", 
+                                    "gogames_screensaver", "scr_linux"))
     except ValueError:
         pass
     classifiers.append("Operating System :: Microsoft :: Windows")

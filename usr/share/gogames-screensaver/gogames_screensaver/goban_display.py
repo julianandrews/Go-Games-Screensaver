@@ -78,14 +78,15 @@ class GobanDisplay(gtk.DrawingArea):
         
     def draw_to_file(self, size, filename):
         draw_size = max(128, size)
+        self.board_size = self.game_node.goban.size
         self.gen_board(draw_size)
         surf = cairo.ImageSurface(0, draw_size, draw_size)
         self.draw(cairo.Context(surf))
         if not draw_size == size:
             new_surf = cairo.ImageSurface(0, size, size)
-            cr = cairo.Context(new_surf)
-            cr.set_source_surface(surf)
-            cr.paint()
+            new_cr = cairo.Context(new_surf)
+            new_cr.set_source_surface(surf)
+            new_cr.paint()
             surf = new_surf
         surf.write_to_png(filename)
         

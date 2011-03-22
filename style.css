@@ -1,28 +1,36 @@
 body {
-    margin: 2em;
+    margin: 0em 2em;
     background-image: url("images/bg.png");
 }
     
 #container {
-    font-family: "Helvetica,Arial,FreeSans";
-    color: #ffffff;
-    background-color: #000000;
+    font-family: "Times New Roman", Times, serif;
+    color: #fff;
+    background-color: #000;
     margin: 0 auto;
-    padding: 2em;
-    width: 44em;
+    padding: 2.5em;
+    width: 55em;
 }
 
-h1, a { color: #5ECDE5; }
-h2 { color: #765EE5; }
+h1, h2, a { color: #5ECDE5; }
 
-h1 { font-size: 2.5em; }
+h1 { 
+    font-size: 3em; 
+    margin: 0;
+}
 h1 .small { font-size: 0.4em; }
 h1 a { text-decoration: none }
 h2 { font-size: 1.5em; }
 
+hr {
+    background-color: #5ECDE5;
+    height:0.15em;
+    border: 0;
+}
+
 .thumbbox {
-    margin: 1em;
-    padding: 1em;
+    margin: 0;
+    padding: 1.5em;
     float: right;
     clear: right;
     text-align: center;
@@ -33,7 +41,7 @@ h2 { font-size: 1.5em; }
 }
 
 .thumbbox img { 
-    border: 1px solid white; 
+    border: 0.0625em solid white; 
 }
 
 .thumbbox p {
@@ -49,13 +57,30 @@ h2 { font-size: 1.5em; }
 
 .download {
     float: right;
+    padding:0;
+    margin:0;
+    text-align:center;
+}
+
+.download a {
+    text-decoration: None;
+}
+
+.download img {
+    width: 3em;
+}
+
+.download p {
+    margin: 0;
+    font-size: 0.7em;
 }
 
 pre {
-    background: #000; 
-    color: #fff;
+    background: black;
+    color: lime;
     padding: 1.4em;
-    border: 1px dashed white;
+    font-weight: bold;
+    border: 0.15em dashed white;
 }
 
 .footer { 

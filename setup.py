@@ -59,6 +59,8 @@ class LinuxInstall(distutils.command.install.install):
         distutils.dir_util.mkpath(ss_exec_dir)
         source = os.path.relpath(bin_file, ss_exec_dir)
         target = os.path.join(ss_exec_dir, os.path.basename(bin_file))
+        print source
+        print target
         distutils.util.execute(os.symlink, (source, target))
         distutils.util.execute(os.popen, ("update-gconf-defaults", ))
         
@@ -117,7 +119,7 @@ elif platform.system() == "Linux":
     classifiers.append("Operating System :: POSIX :: Linux")
 
 setup(name="gogames-screensaver",
-      version="0.18",
+      version="0.19",
       url="http://github.com/JulianAndrews/Go-Games-Screensaver",
       description = "A screensaver which displays go games from sgf files.",
       author = "Julian Andrews",
@@ -130,7 +132,9 @@ setup(name="gogames-screensaver",
                     ("usr/share/gogames-screensaver/sgf", 
                      glob.glob("usr/share/gogames-screensaver/sgf/*.sgf")),
                     ("etc/xdg/gogames-screensaver", 
-                     glob.glob("etc/xdg/gogames-screensaver/*.xml"))],
+                     glob.glob("etc/xdg/gogames-screensaver/*.xml")),
+                    ("usr/share/man/man1",
+                     glob.glob("usr/share/man/man1/*.gz"))],
       requires = ["cairo", "gio", "glib", "gtk", "pango", "rsvg", 
                   "simpleparse"],
       distclass = my_distclass,

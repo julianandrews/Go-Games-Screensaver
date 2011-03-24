@@ -26,6 +26,8 @@ rm -r /etc/xdg/gogames-screensaver
 rm /usr/bin/gogames-screensaver;
 rm /usr/bin/gogames-sgf-thumbnailer;
 rm /usr/share/gconf/defaults/10_gogames-screensaver
+rm /usr/share/man/man1/gogames-screensaver.1.gz
+rm /usr/share/man/man1/gogames-sgf-thumbnailer.1.gz
 update-gconf-defaults
 gconftool-2 --shutdown
 unlink $(pkg-config --variable=privlibexecdir gnome-screensaver)/gogames-screensaver
